@@ -50,6 +50,38 @@ body {
     display: flex;
 }
 
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 5px;
+    border: 2px solid var(--bg-secondary);
+    transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #4f46e5, #d946ef);
+    border-color: var(--border-color);
+}
+
+::-webkit-scrollbar-corner {
+    background: var(--bg-secondary);
+}
+
+/* Firefox Scrollbar */
+* {
+    scrollbar-color: var(--primary-color) var(--bg-secondary);
+    scrollbar-width: thin;
+}
+
 /* Sidebar Navigation */
 .sidebar {
     width: 280px;
