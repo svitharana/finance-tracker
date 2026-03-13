@@ -558,7 +558,6 @@ class FinanceTracker {
         document.getElementById('totalBalance').textContent = this.formatCurrency(this.getTotalBalance());
         document.getElementById('monthlyIncome').textContent = this.formatCurrency(this.getMonthlyIncome());
         document.getElementById('monthlyExpense').textContent = this.formatCurrency(this.getMonthlyExpenses());
-        document.getElementById('dailyLimit').textContent = this.formatCurrency(this.getDailyLimit());
 
         // Update account selector in transaction form
         this.updateAccountSelectors();
@@ -1185,7 +1184,6 @@ class FinanceTracker {
                 document.getElementById('accountName').value = account.name;
                 document.getElementById('accountType').value = account.type;
                 document.getElementById('accountBalance').value = account.balance;
-                document.getElementById('accountDailyLimit').value = this.dailyLimitUser;
                 form.dataset.accountId = accountId;
             }
         } else {
@@ -1212,12 +1210,6 @@ class FinanceTracker {
             balance: parseFloat(document.getElementById('accountBalance').value),
             createdAt: accountId ? this.accounts.find(a => a.id === accountId).createdAt : new Date().toISOString()
         };
-
-        // Handle daily limit if provided (can be updated on both create and edit)
-        const dailyLimitInput = parseFloat(document.getElementById('accountDailyLimit').value) || 0;
-        if (dailyLimitInput > 0) {
-            this.dailyLimitUser = dailyLimitInput;
-        }
 
         if (accountId) {
             const index = this.accounts.findIndex(a => a.id === accountId);

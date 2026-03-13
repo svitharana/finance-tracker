@@ -127,16 +127,13 @@
                             <p class="stat-value" id="monthlyExpense">$0.00</p>
                         </div>
                     </div>
+                </div>
 
-                    <div class="stat-card daily">
-                        <div class="stat-icon">
-                            <i class="fas fa-hourglass-end"></i>
-                        </div>
-                        <div class="stat-content">
-                            <p class="stat-label">Daily Limit</p>
-                            <p class="stat-value" id="dailyLimit">$0.00</p>
-                        </div>
-                    </div>
+                <!-- Add Transaction Button -->
+                <div class="add-transaction-button-container">
+                    <button class="btn btn-primary btn-lg" id="addTransactionBtn">
+                        <i class="fas fa-plus"></i> Add Transaction
+                    </button>
                 </div>
 
                 <!-- Savings Goals Section - FEATURED -->
@@ -173,15 +170,8 @@
                     <div id="upcomingListHome" class="upcoming-list-home featured-list"></div>
                 </div>
 
-                <!-- Add Transaction Button -->
-                <div class="add-transaction-button-container">
-                    <button class="btn btn-primary btn-lg" id="addTransactionBtn">
-                        <i class="fas fa-plus"></i> Add Transaction
-                    </button>
-                </div>
-
                 <!-- Recent Transactions -->
-                <div class="recent-card card">
+                <div class="recent-card card featured-recent">
                     <div class="card-header">
                         <h2>Recent Transactions</h2>
                     </div>
@@ -503,10 +493,6 @@
                 <div class="form-group">
                     <label for="accountBalance">Initial Balance</label>
                     <input type="number" id="accountBalance" step="0.01" value="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="accountDailyLimit">Daily Limit (Optional)</label>
-                    <input type="number" id="accountDailyLimit" step="0.01" value="0" placeholder="Set desired daily spending limit">
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Account</button>
