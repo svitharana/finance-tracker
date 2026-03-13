@@ -209,10 +209,21 @@
         <!-- Accounts & Cards Page -->
         <section id="accounts" class="page">
             <div class="accounts-container">
+                <div class="accounts-header">
+                    <h1 class="accounts-title">Accounts & Cards Management</h1>
+                    <p class="accounts-subtitle">Manage your financial accounts and payment cards</p>
+                </div>
+
                 <!-- Accounts Section -->
-                <div class="section-wrapper">
+                <div class="section-wrapper accounts-section">
                     <div class="section-header">
-                        <h2>My Accounts</h2>
+                        <div class="section-title-group">
+                            <i class="fas fa-credit-card section-icon"></i>
+                            <div>
+                                <h2>My Accounts</h2>
+                                <p class="section-subtitle">Your bank accounts and wallets</p>
+                            </div>
+                        </div>
                         <button class="btn btn-sm btn-primary" id="addAccountBtn">
                             <i class="fas fa-plus"></i> New Account
                         </button>
@@ -221,9 +232,15 @@
                 </div>
 
                 <!-- Cards Section -->
-                <div class="section-wrapper">
+                <div class="section-wrapper cards-section">
                     <div class="section-header">
-                        <h2>My Cards</h2>
+                        <div class="section-title-group">
+                            <i class="fas fa-wallet section-icon"></i>
+                            <div>
+                                <h2>My Cards</h2>
+                                <p class="section-subtitle">Your credit and debit cards</p>
+                            </div>
+                        </div>
                         <button class="btn btn-sm btn-primary" id="addCardBtn">
                             <i class="fas fa-plus"></i> New Card
                         </button>
