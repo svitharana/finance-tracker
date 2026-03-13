@@ -10,6 +10,7 @@ class FinanceTracker {
         this.upcomingExpenses = [];
         this.currency = 'LKR';
         this.darkMode = false;
+        this.dailyLimitUser = 0; // User-set daily limit
         this.exchangeRates = {
             LKR: 1,
             USD: 0.003,
@@ -59,9 +60,11 @@ class FinanceTracker {
             this.goals = data.goals || [];
             this.upcomingExpenses = data.upcomingExpenses || [];
             this.currency = data.currency || 'LKR';
+            this.dailyLimitUser = data.dailyLimitUser || 0;
         } else {
             this.createDefaultAccount();
             this.currency = 'LKR';
+            this.dailyLimitUser = 0;
         }
         
         // Sync currency selector with loaded value
@@ -79,7 +82,8 @@ class FinanceTracker {
             cards: this.cards,
             goals: this.goals,
             upcomingExpenses: this.upcomingExpenses,
-            currency: this.currency
+            currency: this.currency,
+            dailyLimitUser: this.dailyLimitUser
         };
         localStorage.setItem('financeTrackerData', JSON.stringify(data));
     }
@@ -411,6 +415,11 @@ class FinanceTracker {
 
     // Get daily limit
     getDailyLimit() {
+        // If user has set a daily limit, use that
+        if (this.dailyLimitUser > 0) {
+            return this.dailyLimitUser;
+        }
+        // Otherwise, calculate based on monthly expenses and days left
         const monthlyExpenses = this.getMonthlyExpenses();
         const today = new Date();
         const daysLeft = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate() - today.getDate();
@@ -507,9 +516,11 @@ class FinanceTracker {
 
         // Update goals
         this.renderGoals();
+        this.renderHomeGoals();
 
         // Update upcoming expenses
         this.renderUpcomingExpenses();
+        this.renderHomeUpcoming();
 
         // Update recent transactions
         this.renderRecentTransactions();
@@ -970,6 +981,75 @@ class FinanceTracker {
         });
     }
 
+    // Render goals in home page (progress only, no edit/delete)
+    renderHomeGoals() {
+        const goalsList = document.getElementById('goalsListHome');
+        if (!goalsList) return;
+        
+        goalsList.innerHTML = '';
+
+        if (this.goals.length === 0) {
+            goalsList.innerHTML = '<p class="text-muted">No savings goals yet</p>';
+        } else {
+            this.goals.forEach(goal => {
+                const progress = (goal.current / goal.target) * 100;
+                const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+
+                const item = document.createElement('div');
+                item.className = 'goal-item-home';
+                item.innerHTML = `
+                    <div class="goal-info">
+                        <div class="goal-name">${goal.name}</div>
+                        <div class="goal-progress">
+                            <div class="goal-progress-bar" style="width: ${Math.min(progress, 100)}%"></div>
+                        </div>
+                        <div class="goal-stats">
+                            <div class="goal-stat">
+                                <span>${this.formatCurrency(goal.current)} / ${this.formatCurrency(goal.target)}</span>
+                            </div>
+                            <div class="goal-stat">
+                                <span>${daysLeft} days left</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                goalsList.appendChild(item);
+            });
+        }
+    }
+
+    // Render upcoming expenses in home page (progress only, no edit/delete)
+    renderHomeUpcoming() {
+        const upcomingList = document.getElementById('upcomingListHome');
+        if (!upcomingList) return;
+        
+        upcomingList.innerHTML = '';
+        
+        // Get upcoming expenses (today and onwards)
+        const today = new Date();
+        const upcoming = this.upcomingExpenses.filter(e => new Date(e.dueDate) >= today);
+        upcoming.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+        if (upcoming.length === 0) {
+            upcomingList.innerHTML = '<p class="text-muted">No upcoming expenses</p>';
+        } else {
+            upcoming.forEach(expense => {
+                const daysUntil = Math.ceil((new Date(expense.dueDate) - today) / (1000 * 60 * 60 * 24));
+                const item = document.createElement('div');
+                item.className = 'upcoming-item-home';
+                item.innerHTML = `
+                    <div class="upcoming-info">
+                        <div class="upcoming-name">${expense.name}</div>
+                        <div class="upcoming-date">Due: ${new Date(expense.dueDate).toLocaleDateString()}</div>
+                        <div class="upcoming-status">${daysUntil} days</div>
+                    </div>
+                    <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
+                `;
+                upcomingList.appendChild(item);
+            });
+        }
+    }
+
     // Render accounts
     renderAccounts() {
         const accountsList = document.getElementById('accountsList');
@@ -1022,6 +1102,10 @@ class FinanceTracker {
                 document.getElementById('accountName').value = account.name;
                 document.getElementById('accountType').value = account.type;
                 document.getElementById('accountBalance').value = account.balance;
+                document.getElementById('accountDailyLimit').value = this.dailyLimitUser;
+                document.getElementById('accountGoalName').value = '';
+                document.getElementById('accountGoalTarget').value = '';
+                document.getElementById('accountGoalDeadline').value = '';
                 form.dataset.accountId = accountId;
             }
         } else {
@@ -1049,6 +1133,12 @@ class FinanceTracker {
             createdAt: accountId ? this.accounts.find(a => a.id === accountId).createdAt : new Date().toISOString()
         };
 
+        // Handle daily limit if provided (can be updated on both create and edit)
+        const dailyLimitInput = parseFloat(document.getElementById('accountDailyLimit').value) || 0;
+        if (dailyLimitInput > 0) {
+            this.dailyLimitUser = dailyLimitInput;
+        }
+
         if (accountId) {
             const index = this.accounts.findIndex(a => a.id === accountId);
             this.accounts[index] = account;
@@ -1056,6 +1146,26 @@ class FinanceTracker {
         } else {
             this.accounts.push(account);
             this.showToast('Success', 'Account created successfully! 🏦', 'success');
+        }
+
+        // Handle goal creation if provided (only on new account creation)
+        if (!accountId) {
+            const goalName = document.getElementById('accountGoalName').value.trim();
+            const goalTarget = parseFloat(document.getElementById('accountGoalTarget').value) || 0;
+            const goalDeadline = document.getElementById('accountGoalDeadline').value;
+
+            if (goalName && goalTarget > 0 && goalDeadline) {
+                const goal = {
+                    id: 'goal_' + Date.now(),
+                    name: goalName,
+                    target: goalTarget,
+                    current: 0,
+                    deadline: goalDeadline,
+                    createdAt: new Date().toISOString()
+                };
+                this.goals.push(goal);
+                this.showToast('Goal Created', `Savings goal "${goalName}" created successfully! 🎯`, 'success');
+            }
         }
 
         this.saveToStorage();

@@ -40,25 +40,6 @@
         </nav>
 
         <div class="sidebar-content">
-            <div class="sidebar-section currency-section">
-                <h3 class="sidebar-section-title">Display Currency</h3>
-                <div class="currency-selector">
-                    <select id="currencySelect">
-                        <option value="LKR">LKR (රු) - Sri Lanka</option>
-                        <option value="USD">USD ($) - USA</option>
-                        <option value="EUR">EUR (€) - Europe</option>
-                        <option value="GBP">GBP (£) - UK</option>
-                        <option value="INR">INR (₹) - India</option>
-                        <option value="JPY">JPY (¥) - Japan</option>
-                        <option value="AUD">AUD (A$) - Australia</option>
-                        <option value="CAD">CAD (C$) - Canada</option>
-                        <option value="AED">AED (د.إ) - UAE</option>
-                        <option value="SAR">SAR (﷼) - Saudi Arabia</option>
-                    </select>
-                    <small class="currency-note">All amounts shown in selected currency</small>
-                </div>
-            </div>
-
             <div class="sidebar-section">
                 <div class="section-header-small">
                     <h3 class="sidebar-section-title">Savings Goals</h3>
@@ -77,6 +58,25 @@
                     </button>
                 </div>
                 <div id="upcomingListSidebar" class="sidebar-list"></div>
+            </div>
+
+            <div class="sidebar-section currency-section" style="margin-top: auto;">
+                <h3 class="sidebar-section-title">Display Currency</h3>
+                <div class="currency-selector">
+                    <select id="currencySelect">
+                        <option value="LKR">LKR (රු) - Sri Lanka</option>
+                        <option value="USD">USD ($) - USA</option>
+                        <option value="EUR">EUR (€) - Europe</option>
+                        <option value="GBP">GBP (£) - UK</option>
+                        <option value="INR">INR (₹) - India</option>
+                        <option value="JPY">JPY (¥) - Japan</option>
+                        <option value="AUD">AUD (A$) - Australia</option>
+                        <option value="CAD">CAD (C$) - Canada</option>
+                        <option value="AED">AED (د.إ) - UAE</option>
+                        <option value="SAR">SAR (﷼) - Saudi Arabia</option>
+                    </select>
+                    <small class="currency-note">All amounts shown in selected currency</small>
+                </div>
             </div>
         </div>
     </aside>
@@ -153,6 +153,22 @@
                         <a href="#transactions" class="link-btn">View All</a>
                     </div>
                     <div id="recentTransactions" class="transactions-list"></div>
+                </div>
+
+                <!-- Savings Goals Section -->
+                <div class="home-card card">
+                    <div class="card-header">
+                        <h2>Savings Goals</h2>
+                    </div>
+                    <div id="goalsListHome" class="goals-list-home"></div>
+                </div>
+
+                <!-- Upcoming Expenses Section -->
+                <div class="home-card card">
+                    <div class="card-header">
+                        <h2>Upcoming Expenses</h2>
+                    </div>
+                    <div id="upcomingListHome" class="upcoming-list-home"></div>
                 </div>
             </div>
         </section>
@@ -470,6 +486,26 @@
                 <div class="form-group">
                     <label for="accountBalance">Initial Balance</label>
                     <input type="number" id="accountBalance" step="0.01" value="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="accountDailyLimit">Daily Limit (Optional)</label>
+                    <input type="number" id="accountDailyLimit" step="0.01" value="0" placeholder="Set desired daily spending limit">
+                </div>
+                <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border-color);">
+                <div style="margin-bottom: 12px;">
+                    <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">Create a Savings Goal for this Account (Optional)</p>
+                </div>
+                <div class="form-group">
+                    <label for="accountGoalName">Goal Name</label>
+                    <input type="text" id="accountGoalName" placeholder="e.g., Emergency Fund">
+                </div>
+                <div class="form-group">
+                    <label for="accountGoalTarget">Goal Target Amount</label>
+                    <input type="number" id="accountGoalTarget" step="0.01" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="accountGoalDeadline">Goal Target Date</label>
+                    <input type="date" id="accountGoalDeadline">
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Save Account</button>
