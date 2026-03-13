@@ -11,6 +11,7 @@ class FinanceTracker {
         this.currency = 'LKR';
         this.darkMode = false;
         this.dailyLimitUser = 0; // User-set daily limit
+        this.editingTransactionId = null; // Track which transaction is being edited
         this.exchangeRates = {
             LKR: 1,
             USD: 0.003,
@@ -308,6 +309,39 @@ class FinanceTracker {
             return;
         }
 
+        // Check if we're editing an existing transaction
+        if (this.editingTransactionId) {
+            const existingTransaction = this.transactions.find(t => t.id === this.editingTransactionId);
+            if (existingTransaction) {
+                // Remove old balance impact
+                this.updateAccountBalance(existingTransaction.accountId, existingTransaction.amount, 
+                    existingTransaction.type === 'income' ? 'expense' : 'income');
+
+                // Update transaction
+                existingTransaction.date = date;
+                existingTransaction.type = type;
+                existingTransaction.category = category;
+                existingTransaction.amount = amount;
+                existingTransaction.accountId = accountId;
+                existingTransaction.cardId = cardId;
+                existingTransaction.description = description;
+
+                // Apply new balance impact
+                this.updateAccountBalance(accountId, amount, type);
+                this.saveToStorage();
+                this.updateUI();
+                if (this.currentPage === 'transactions') {
+                    this.renderTransactions();
+                }
+                this.resetTransactionForm();
+                this.editingTransactionId = null;
+                this.closeTransactionModal();
+                this.showToast('Success', 'Transaction updated successfully! ✏️', 'success');
+                return;
+            }
+        }
+
+        // Create new transaction
         const transaction = {
             id: 'trans_' + Date.now(),
             date,
@@ -351,8 +385,14 @@ class FinanceTracker {
     openTransactionModal() {
         const modal = document.getElementById('transactionModal');
         const form = document.getElementById('transactionForm');
+        const header = modal.querySelector('.modal-header h3');
+        const submitBtn = document.getElementById('transSubmitBtn');
+        
         form.reset();
         this.setDefaultDate();
+        this.editingTransactionId = null;
+        header.textContent = 'Add Transaction';
+        submitBtn.textContent = 'Add Transaction';
         modal.classList.add('active');
     }
 
@@ -1495,6 +1535,11 @@ class FinanceTracker {
     openEditTransaction(id) {
         const transaction = this.transactions.find(t => t.id === id);
         if (transaction) {
+            const modal = document.getElementById('transactionModal');
+            const header = modal.querySelector('.modal-header h3');
+            const submitBtn = document.getElementById('transSubmitBtn');
+            
+            // Populate form with transaction data
             document.getElementById('transDate').value = transaction.date;
             document.getElementById('transType').value = transaction.type;
             document.getElementById('transCategory').value = transaction.category;
@@ -1503,6 +1548,13 @@ class FinanceTracker {
             document.getElementById('transCard').value = transaction.cardId || '';
             document.getElementById('transDescription').value = transaction.description;
             
+            // Mark as editing and update modal header and button
+            this.editingTransactionId = id;
+            header.textContent = 'Edit Transaction';
+            submitBtn.textContent = 'Update Transaction';
+            
+            // Open modal and focus on amount field
+            modal.classList.add('active');
             document.getElementById('transAmount').focus();
         }
     }
