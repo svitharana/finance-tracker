@@ -1144,7 +1144,7 @@ class FinanceTracker {
 
         this.accounts.forEach(account => {
             const item = document.createElement('div');
-            item.className = 'account-card';
+            item.className = `account-card account-${account.type}`;
             item.innerHTML = `
                 <div class="account-type">${this.getAccountTypeLabel(account.type)}</div>
                 <div class="account-name">${account.name}</div>
@@ -1252,7 +1252,7 @@ class FinanceTracker {
 
         this.cards.forEach(card => {
             const item = document.createElement('div');
-            item.className = 'payment-card';
+            item.className = `payment-card card-${card.type.toLowerCase()}`;
             item.innerHTML = `
                 <div class="card-type">${card.type.toUpperCase()}</div>
                 <div class="card-name">${card.name}</div>
