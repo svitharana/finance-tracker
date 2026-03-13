@@ -39,18 +39,44 @@
             </a>
         </nav>
 
-        <div class="sidebar-footer">
-            <div class="currency-selector">
-                <label for="currencySelect">Currency:</label>
-                <select id="currencySelect">
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                    <option value="INR">INR (₹)</option>
-                    <option value="JPY">JPY (¥)</option>
-                    <option value="AUD">AUD (A$)</option>
-                    <option value="CAD">CAD (C$)</option>
-                </select>
+        <div class="sidebar-content">
+            <div class="sidebar-section currency-section">
+                <h3 class="sidebar-section-title">Display Currency</h3>
+                <div class="currency-selector">
+                    <select id="currencySelect">
+                        <option value="LKR">LKR (රු) - Sri Lanka</option>
+                        <option value="USD">USD ($) - USA</option>
+                        <option value="EUR">EUR (€) - Europe</option>
+                        <option value="GBP">GBP (£) - UK</option>
+                        <option value="INR">INR (₹) - India</option>
+                        <option value="JPY">JPY (¥) - Japan</option>
+                        <option value="AUD">AUD (A$) - Australia</option>
+                        <option value="CAD">CAD (C$) - Canada</option>
+                        <option value="AED">AED (د.إ) - UAE</option>
+                        <option value="SAR">SAR (﷼) - Saudi Arabia</option>
+                    </select>
+                    <small class="currency-note">All amounts shown in selected currency</small>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-header-small">
+                    <h3 class="sidebar-section-title">Savings Goals</h3>
+                    <button class="btn-icon-sm" id="addGoalBtnSidebar" title="Add new goal">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="goalsListSidebar" class="sidebar-list"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-header-small">
+                    <h3 class="sidebar-section-title">Upcoming Expenses</h3>
+                    <button class="btn-icon-sm" id="addUpcomingBtnSidebar" title="Add upcoming expense">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div id="upcomingListSidebar" class="sidebar-list"></div>
             </div>
         </div>
     </aside>
@@ -113,109 +139,11 @@
                     </div>
                 </div>
 
-                <!-- Add Transaction Section -->
-                <div class="add-transaction-card card">
-                    <h2>Add Transaction</h2>
-                    <form id="transactionForm" class="transaction-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="transDate">Date</label>
-                                <input type="date" id="transDate" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="transType">Type</label>
-                                <select id="transType" required>
-                                    <option value="">Select Type</option>
-                                    <option value="income">Income</option>
-                                    <option value="expense">Expense</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="transCategory">Category</label>
-                                <select id="transCategory" required>
-                                    <option value="">Select Category</option>
-                                    <optgroup label="Income">
-                                        <option value="salary">Salary</option>
-                                        <option value="freelance">Freelance</option>
-                                        <option value="investment">Investment</option>
-                                        <option value="bonus">Bonus</option>
-                                        <option value="other_income">Other</option>
-                                    </optgroup>
-                                    <optgroup label="Expenses">
-                                        <option value="food">Food & Dining</option>
-                                        <option value="transportation">Transportation</option>
-                                        <option value="utilities">Utilities</option>
-                                        <option value="entertainment">Entertainment</option>
-                                        <option value="shopping">Shopping</option>
-                                        <option value="healthcare">Healthcare</option>
-                                        <option value="rent">Rent/Mortgage</option>
-                                        <option value="education">Education</option>
-                                        <option value="subscription">Subscription</option>
-                                        <option value="other_expense">Other</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="transAmount">Amount</label>
-                                <input type="number" id="transAmount" step="0.01" placeholder="0.00" required>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="transAccount">Account</label>
-                                <select id="transAccount" required>
-                                    <option value="">Select Account</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="transCard">Card (Optional)</label>
-                                <select id="transCard">
-                                    <option value="">None</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group full">
-                            <label for="transDescription">Description</label>
-                            <textarea id="transDescription" rows="2" placeholder="Add notes..."></textarea>
-                        </div>
-
-                        <div class="form-group full">
-                            <label for="transReceipt">Receipt (Optional)</label>
-                            <input type="file" id="transReceipt" accept="image/*">
-                            <small>Upload receipt image for record</small>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block">
-                            <i class="fas fa-plus"></i> Add Transaction
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Goals Section -->
-                <div class="goals-card card">
-                    <div class="card-header">
-                        <h2>Savings Goals</h2>
-                        <button class="btn-icon" id="addGoalBtn" title="Add new goal">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <div id="goalsList" class="goals-list"></div>
-                </div>
-
-                <!-- Upcoming Expenses -->
-                <div class="upcoming-card card">
-                    <div class="card-header">
-                        <h2>Upcoming Expenses</h2>
-                        <button class="btn-icon" id="addUpcomingBtn" title="Add upcoming expense">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    <div id="upcomingList" class="upcoming-list"></div>
+                <!-- Add Transaction Button -->
+                <div class="add-transaction-button-container">
+                    <button class="btn btn-primary btn-lg" id="addTransactionBtn">
+                        <i class="fas fa-plus"></i> Add Transaction
+                    </button>
                 </div>
 
                 <!-- Recent Transactions -->
@@ -337,7 +265,111 @@
     </main>
 
     <!-- Modals -->
-    <!-- Add/Edit Goal Modal -->
+    <!-- Add Transaction Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Transaction</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="transactionForm" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transDate">Date</label>
+                        <input type="date" id="transDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transType">Type</label>
+                        <select id="transType" required>
+                            <option value="">Select Type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transCategory">Category</label>
+                        <select id="transCategory" required>
+                            <option value="">Select Category</option>
+                            <optgroup label="Income">
+                                <option value="salary">Salary</option>
+                                <option value="freelance">Freelance</option>
+                                <option value="investment">Investment</option>
+                                <option value="bonus">Bonus</option>
+                                <option value="other_income">Other</option>
+                            </optgroup>
+                            <optgroup label="Expenses">
+                                <option value="food">Food & Dining</option>
+                                <option value="transportation">Transportation</option>
+                                <option value="utilities">Utilities</option>
+                                <option value="entertainment">Entertainment</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="rent">Rent/Mortgage</option>
+                                <option value="education">Education</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="other_expense">Other</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transAmount">Amount</label>
+                        <input type="number" id="transAmount" step="0.01" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transAccount">Account</label>
+                        <select id="transAccount" required>
+                            <option value="">Select Account</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transCard">Card (Optional)</label>
+                        <select id="transCard">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group full">
+                    <label for="transDescription">Description</label>
+                    <textarea id="transDescription" rows="2" placeholder="Add notes..."></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label for="transReceipt">Receipt (Optional)</label>
+                    <input type="file" id="transReceipt" accept="image/*">
+                    <small>Upload receipt image for record</small>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Add Transaction</button>
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Receipt Modal -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Receipt</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="receipt-viewer">
+                <img id="receiptImage" src="" alt="Receipt" class="receipt-image">
+                <div class="receipt-info" id="receiptInfo"></div>
+                <div class="form-actions">
+                    <button class="btn btn-secondary modal-close-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="goalModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">

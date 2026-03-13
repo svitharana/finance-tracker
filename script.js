@@ -8,19 +8,23 @@ class FinanceTracker {
         this.cards = [];
         this.goals = [];
         this.upcomingExpenses = [];
-        this.currency = 'USD';
+        this.currency = 'LKR';
         this.darkMode = false;
         this.exchangeRates = {
-            USD: 1,
-            EUR: 0.85,
-            GBP: 0.73,
-            INR: 83.5,
-            JPY: 110,
-            AUD: 1.45,
-            CAD: 1.35
+            LKR: 1,
+            USD: 0.003,
+            EUR: 0.0026,
+            GBP: 0.0023,
+            INR: 0.25,
+            JPY: 0.45,
+            AUD: 0.0045,
+            CAD: 0.004,
+            AED: 0.011,
+            SAR: 0.012
         };
         this.currentPage = 'home';
         this.charts = {};
+        this.baseCurrency = 'LKR'; // All amounts stored in LKR
 
         this.init();
     }
@@ -34,6 +38,16 @@ class FinanceTracker {
         this.updateUI();
     }
 
+    // Convert amount from base currency (LKR) to selected currency
+    convertAmount(amountInLKR) {
+        if (this.currency === this.baseCurrency) {
+            return amountInLKR;
+        }
+        // Convert from LKR to target currency
+        const rate = this.exchangeRates[this.currency] || 1;
+        return amountInLKR * rate;
+    }
+
     // Load data from localStorage
     loadFromStorage() {
         const stored = localStorage.getItem('financeTrackerData');
@@ -44,9 +58,16 @@ class FinanceTracker {
             this.cards = data.cards || [];
             this.goals = data.goals || [];
             this.upcomingExpenses = data.upcomingExpenses || [];
-            this.currency = data.currency || 'USD';
+            this.currency = data.currency || 'LKR';
         } else {
             this.createDefaultAccount();
+            this.currency = 'LKR';
+        }
+        
+        // Sync currency selector with loaded value
+        const currencySelect = document.getElementById('currencySelect');
+        if (currencySelect) {
+            currencySelect.value = this.currency;
         }
     }
 
@@ -100,6 +121,11 @@ class FinanceTracker {
             this.updateUI();
         });
 
+        // Add transaction button (opens modal)
+        document.getElementById('addTransactionBtn').addEventListener('click', () => {
+            this.openTransactionModal();
+        });
+
         // Transaction form
         document.getElementById('transactionForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -116,11 +142,20 @@ class FinanceTracker {
         });
 
         // Goals and upcoming expenses
-        document.getElementById('addGoalBtn').addEventListener('click', () => {
+        document.getElementById('addGoalBtn')?.addEventListener('click', () => {
             this.openGoalModal();
         });
 
-        document.getElementById('addUpcomingBtn').addEventListener('click', () => {
+        document.getElementById('addUpcomingBtn')?.addEventListener('click', () => {
+            this.openUpcomingModal();
+        });
+
+        // Sidebar goals and upcoming buttons
+        document.getElementById('addGoalBtnSidebar')?.addEventListener('click', () => {
+            this.openGoalModal();
+        });
+
+        document.getElementById('addUpcomingBtnSidebar')?.addEventListener('click', () => {
             this.openUpcomingModal();
         });
 
@@ -265,7 +300,7 @@ class FinanceTracker {
         const description = document.getElementById('transDescription').value;
 
         if (!accountId) {
-            alert('Please select an account');
+            this.showToast('Missing Information', 'Please select an account', 'warning');
             return;
         }
 
@@ -293,6 +328,8 @@ class FinanceTracker {
                 this.saveToStorage();
                 this.updateUI();
                 this.resetTransactionForm();
+                this.closeTransactionModal();
+                this.showToast('Success', `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully! 💰`, 'success');
             };
             reader.readAsDataURL(receiptFile);
         } else {
@@ -301,7 +338,24 @@ class FinanceTracker {
             this.saveToStorage();
             this.updateUI();
             this.resetTransactionForm();
+            this.closeTransactionModal();
+            this.showToast('Success', `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully! 💰`, 'success');
         }
+    }
+
+    // Open transaction modal
+    openTransactionModal() {
+        const modal = document.getElementById('transactionModal');
+        const form = document.getElementById('transactionForm');
+        form.reset();
+        this.setDefaultDate();
+        modal.classList.add('active');
+    }
+
+    // Close transaction modal
+    closeTransactionModal() {
+        const modal = document.getElementById('transactionModal');
+        modal.classList.remove('active');
     }
 
     // Update account balance
@@ -366,16 +420,23 @@ class FinanceTracker {
     // Format currency
     formatCurrency(amount) {
         const symbols = {
+            LKR: 'රු',
             USD: '$',
             EUR: '€',
             GBP: '£',
             INR: '₹',
             JPY: '¥',
             AUD: 'A$',
-            CAD: 'C$'
+            CAD: 'C$',
+            AED: 'د.إ',
+            SAR: '﷼'
         };
+        
+        // Convert amount from LKR to selected currency
+        const convertedAmount = this.convertAmount(amount);
+        
         const symbol = symbols[this.currency] || '$';
-        const absAmount = Math.abs(amount);
+        const absAmount = Math.abs(convertedAmount);
         const formatted = absAmount.toLocaleString('en-US', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -383,8 +444,58 @@ class FinanceTracker {
         return `${symbol}${formatted}`;
     }
 
+    // Show toast notification
+    showToast(title, message, type = 'success', duration = 4000) {
+        const container = this.getOrCreateToastContainer();
+        
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-times-circle',
+            warning: 'fas fa-exclamation-circle',
+            info: 'fas fa-info-circle'
+        };
+        
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="${icons[type]}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto-remove after duration
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    }
+
+    // Get or create toast container
+    getOrCreateToastContainer() {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        return container;
+    }
+
     // Update UI - Home page
     updateUI() {
+        // Sync currency selector
+        const currencySelect = document.getElementById('currencySelect');
+        if (currencySelect) {
+            currencySelect.value = this.currency;
+        }
+        
         // Update stats
         document.getElementById('totalBalance').textContent = this.formatCurrency(this.getTotalBalance());
         document.getElementById('monthlyIncome').textContent = this.formatCurrency(this.getMonthlyIncome());
@@ -492,6 +603,9 @@ class FinanceTracker {
             </div>
             <div class="transaction-amount">${this.formatCurrency(transaction.amount)}</div>
             <div class="transaction-actions">
+                ${transaction.receipt ? `<button class="btn-action receipt" title="View receipt" onclick="tracker.viewReceipt('${transaction.id}')">
+                    <i class="fas fa-image"></i>
+                </button>` : ''}
                 <button class="btn-action edit" title="Edit" onclick="tracker.openEditTransaction('${transaction.id}')">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -502,6 +616,41 @@ class FinanceTracker {
         `;
 
         return div;
+    }
+
+    // View receipt
+    viewReceipt(transactionId) {
+        const transaction = this.transactions.find(t => t.id === transactionId);
+        if (transaction && transaction.receipt) {
+            const modal = document.getElementById('receiptModal');
+            const receiptImage = document.getElementById('receiptImage');
+            const receiptInfo = document.getElementById('receiptInfo');
+            
+            receiptImage.src = transaction.receipt;
+            
+            const date = new Date(transaction.date).toLocaleDateString();
+            
+            receiptInfo.innerHTML = `
+                <div class="receipt-info-row">
+                    <span class="receipt-info-label">Date:</span>
+                    <span>${date}</span>
+                </div>
+                <div class="receipt-info-row">
+                    <span class="receipt-info-label">Amount:</span>
+                    <span>${this.formatCurrency(transaction.amount)}</span>
+                </div>
+                <div class="receipt-info-row">
+                    <span class="receipt-info-label">Category:</span>
+                    <span>${this.getCategoryLabel(transaction.category)}</span>
+                </div>
+                <div class="receipt-info-row">
+                    <span class="receipt-info-label">Description:</span>
+                    <span>${transaction.description || 'N/A'}</span>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
     }
 
     // Get category label
@@ -546,45 +695,70 @@ class FinanceTracker {
     // Render goals
     renderGoals() {
         const goalsList = document.getElementById('goalsList');
-        goalsList.innerHTML = '';
+        const goalsListSidebar = document.getElementById('goalsListSidebar');
+        
+        // Render in main content (if exists)
+        if (goalsList) {
+            goalsList.innerHTML = '';
 
-        if (this.goals.length === 0) {
-            goalsList.innerHTML = '<p class="text-muted">No savings goals yet</p>';
-            return;
+            if (this.goals.length === 0) {
+                goalsList.innerHTML = '<p class="text-muted">No savings goals yet</p>';
+            } else {
+                this.goals.forEach(goal => {
+                    const progress = (goal.current / goal.target) * 100;
+                    const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+
+                    const item = document.createElement('div');
+                    item.className = 'goal-item';
+                    item.innerHTML = `
+                        <div class="goal-info">
+                            <div class="goal-name">${goal.name}</div>
+                            <div class="goal-progress">
+                                <div class="goal-progress-bar" style="width: ${Math.min(progress, 100)}%"></div>
+                            </div>
+                            <div class="goal-stats">
+                                <div class="goal-stat">
+                                    <span>${this.formatCurrency(goal.current)} / ${this.formatCurrency(goal.target)}</span>
+                                </div>
+                                <div class="goal-stat">
+                                    <span>${daysLeft} days left</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transaction-actions">
+                            <button class="btn-action edit" title="Edit" onclick="tracker.editGoal('${goal.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal('${goal.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    goalsList.appendChild(item);
+                });
+            }
         }
 
-        this.goals.forEach(goal => {
-            const progress = (goal.current / goal.target) * 100;
-            const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+        // Render in sidebar
+        if (goalsListSidebar) {
+            goalsListSidebar.innerHTML = '';
 
-            const item = document.createElement('div');
-            item.className = 'goal-item';
-            item.innerHTML = `
-                <div class="goal-info">
-                    <div class="goal-name">${goal.name}</div>
-                    <div class="goal-progress">
-                        <div class="goal-progress-bar" style="width: ${Math.min(progress, 100)}%"></div>
-                    </div>
-                    <div class="goal-stats">
-                        <div class="goal-stat">
-                            <span>${this.formatCurrency(goal.current)} / ${this.formatCurrency(goal.target)}</span>
-                        </div>
-                        <div class="goal-stat">
-                            <span>${daysLeft} days left</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="transaction-actions">
-                    <button class="btn-action edit" title="Edit" onclick="tracker.editGoal('${goal.id}')">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal('${goal.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            goalsList.appendChild(item);
-        });
+            if (this.goals.length === 0) {
+                goalsListSidebar.innerHTML = '<p class="text-muted" style="font-size: 12px;">No goals yet</p>';
+            } else {
+                this.goals.forEach(goal => {
+                    const progress = (goal.current / goal.target) * 100;
+                    const item = document.createElement('div');
+                    item.className = 'sidebar-goal-item';
+                    item.innerHTML = `
+                        <div class="sidebar-item-name">${goal.name}</div>
+                        <div class="sidebar-item-info">${this.formatCurrency(goal.current)} / ${this.formatCurrency(goal.target)}</div>
+                    `;
+                    item.addEventListener('click', () => this.editGoal(goal.id));
+                    goalsListSidebar.appendChild(item);
+                });
+            }
+        }
     }
 
     // Open goal modal
@@ -630,8 +804,10 @@ class FinanceTracker {
         if (goalId) {
             const index = this.goals.findIndex(g => g.id === goalId);
             this.goals[index] = goal;
+            this.showToast('Updated', 'Savings goal updated successfully! 🎯', 'success');
         } else {
             this.goals.push(goal);
+            this.showToast('Success', 'Savings goal created successfully! 🎯', 'success');
         }
 
         this.saveToStorage();
@@ -651,40 +827,65 @@ class FinanceTracker {
     // Render upcoming expenses
     renderUpcomingExpenses() {
         const upcomingList = document.getElementById('upcomingList');
-        upcomingList.innerHTML = '';
-
-        if (this.upcomingExpenses.length === 0) {
-            upcomingList.innerHTML = '<p class="text-muted">No upcoming expenses</p>';
-            return;
-        }
-
+        const upcomingListSidebar = document.getElementById('upcomingListSidebar');
+        
+        // Get upcoming expenses (today and onwards)
         const today = new Date();
         const upcoming = this.upcomingExpenses.filter(e => new Date(e.dueDate) >= today);
-        
         upcoming.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
-        upcoming.forEach(expense => {
-            const daysUntil = Math.ceil((new Date(expense.dueDate) - today) / (1000 * 60 * 60 * 24));
-            const item = document.createElement('div');
-            item.className = 'upcoming-item';
-            item.innerHTML = `
-                <div class="upcoming-info">
-                    <div class="upcoming-name">${expense.name}</div>
-                    <div class="upcoming-date">Due: ${new Date(expense.dueDate).toLocaleDateString()}</div>
-                    <div class="upcoming-status">${daysUntil} days</div>
-                </div>
-                <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
-                <div class="transaction-actions">
-                    <button class="btn-action edit" title="Edit" onclick="tracker.editUpcoming('${expense.id}')">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-action delete" title="Delete" onclick="tracker.deleteUpcoming('${expense.id}')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            upcomingList.appendChild(item);
-        });
+        // Render in main content (if exists)
+        if (upcomingList) {
+            upcomingList.innerHTML = '';
+
+            if (upcoming.length === 0) {
+                upcomingList.innerHTML = '<p class="text-muted">No upcoming expenses</p>';
+            } else {
+                upcoming.forEach(expense => {
+                    const daysUntil = Math.ceil((new Date(expense.dueDate) - today) / (1000 * 60 * 60 * 24));
+                    const item = document.createElement('div');
+                    item.className = 'upcoming-item';
+                    item.innerHTML = `
+                        <div class="upcoming-info">
+                            <div class="upcoming-name">${expense.name}</div>
+                            <div class="upcoming-date">Due: ${new Date(expense.dueDate).toLocaleDateString()}</div>
+                            <div class="upcoming-status">${daysUntil} days</div>
+                        </div>
+                        <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
+                        <div class="transaction-actions">
+                            <button class="btn-action edit" title="Edit" onclick="tracker.editUpcoming('${expense.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action delete" title="Delete" onclick="tracker.deleteUpcoming('${expense.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    upcomingList.appendChild(item);
+                });
+            }
+        }
+
+        // Render in sidebar
+        if (upcomingListSidebar) {
+            upcomingListSidebar.innerHTML = '';
+
+            if (upcoming.length === 0) {
+                upcomingListSidebar.innerHTML = '<p class="text-muted" style="font-size: 12px;">No upcoming</p>';
+            } else {
+                upcoming.slice(0, 5).forEach(expense => {
+                    const daysUntil = Math.ceil((new Date(expense.dueDate) - today) / (1000 * 60 * 60 * 24));
+                    const item = document.createElement('div');
+                    item.className = 'sidebar-upcoming-item';
+                    item.innerHTML = `
+                        <div class="sidebar-item-name">${expense.name}</div>
+                        <div class="sidebar-item-info">${daysUntil} days • ${this.formatCurrency(expense.amount)}</div>
+                    `;
+                    item.addEventListener('click', () => this.editUpcoming(expense.id));
+                    upcomingListSidebar.appendChild(item);
+                });
+            }
+        }
     }
 
     // Open upcoming modal
@@ -732,8 +933,10 @@ class FinanceTracker {
         if (expenseId) {
             const index = this.upcomingExpenses.findIndex(e => e.id === expenseId);
             this.upcomingExpenses[index] = expense;
+            this.showToast('Updated', 'Upcoming expense updated successfully! 📅', 'success');
         } else {
             this.upcomingExpenses.push(expense);
+            this.showToast('Success', 'Upcoming expense added successfully! 📅', 'success');
         }
 
         this.saveToStorage();
@@ -849,8 +1052,10 @@ class FinanceTracker {
         if (accountId) {
             const index = this.accounts.findIndex(a => a.id === accountId);
             this.accounts[index] = account;
+            this.showToast('Updated', 'Account updated successfully! 🏦', 'success');
         } else {
             this.accounts.push(account);
+            this.showToast('Success', 'Account created successfully! 🏦', 'success');
         }
 
         this.saveToStorage();
@@ -947,8 +1152,10 @@ class FinanceTracker {
         if (cardId) {
             const index = this.cards.findIndex(c => c.id === cardId);
             this.cards[index] = card;
+            this.showToast('Updated', 'Card updated successfully! 💳', 'success');
         } else {
             this.cards.push(card);
+            this.showToast('Success', 'Card added successfully! 💳', 'success');
         }
 
         this.saveToStorage();
@@ -1164,11 +1371,15 @@ class FinanceTracker {
         }
     }
 
-    // Currency converter
+    // Currency converter (for currency calculator)
     convertCurrency(fromCurrency, toCurrency, amount) {
-        const fromRate = this.exchangeRates[fromCurrency] || 1;
+        // Convert from fromCurrency to LKR first
+        const baseCurrencyRate = this.exchangeRates[fromCurrency] || 1;
+        const amountInLKR = amount / baseCurrencyRate;
+        
+        // Then convert from LKR to toCurrency
         const toRate = this.exchangeRates[toCurrency] || 1;
-        return (amount / fromRate) * toRate;
+        return amountInLKR * toRate;
     }
 
     openEditTransaction(id) {
