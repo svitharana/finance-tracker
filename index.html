@@ -236,50 +236,87 @@
         <!-- Summary Page -->
         <section id="summary" class="page">
             <div class="summary-container">
-                <div class="summary-controls">
-                    <input type="month" id="summaryMonth" class="month-input">
+                <div class="summary-header">
+                    <h1 class="summary-title">Financial Analytics</h1>
+                    <div class="summary-controls">
+                        <label for="summaryMonth" class="month-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Select Month:
+                        </label>
+                        <input type="month" id="summaryMonth" class="month-input">
+                    </div>
                 </div>
 
                 <div class="charts-container">
-                    <div class="chart-card card">
-                        <h3>Monthly Overview</h3>
+                    <div class="chart-card card overview-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-line"></i> Monthly Overview</h3>
+                        </div>
                         <canvas id="overviewChart"></canvas>
                     </div>
 
-                    <div class="chart-card card">
-                        <h3>Expense Categories</h3>
+                    <div class="chart-card card expense-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-shopping-cart"></i> Expense Categories</h3>
+                        </div>
                         <canvas id="categoryChart"></canvas>
                     </div>
 
-                    <div class="chart-card card">
-                        <h3>Income Categories</h3>
+                    <div class="chart-card card income-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-coins"></i> Income Categories</h3>
+                        </div>
                         <canvas id="incomeChart"></canvas>
                     </div>
 
-                    <div class="chart-card card">
-                        <h3>Account Distribution</h3>
+                    <div class="chart-card card account-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-piggy-bank"></i> Account Distribution</h3>
+                        </div>
                         <canvas id="accountChart"></canvas>
                     </div>
                 </div>
 
-                <div class="summary-stats card">
-                    <h3>Monthly Summary</h3>
+                <div class="summary-stats card featured-stats">
+                    <div class="stats-header">
+                        <h2><i class="fas fa-chart-bar"></i> Monthly Summary</h2>
+                    </div>
                     <div class="summary-grid">
-                        <div class="summary-item">
-                            <span class="summary-label">Total Income</span>
-                            <span class="summary-value income-text" id="summaryIncome">$0.00</span>
+                        <div class="summary-item income-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="summary-content">
+                                <span class="summary-label">Total Income</span>
+                                <span class="summary-value income-text" id="summaryIncome">$0.00</span>
+                            </div>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Total Expenses</span>
-                            <span class="summary-value expense-text" id="summaryExpense">$0.00</span>
+                        <div class="summary-item expense-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="summary-content">
+                                <span class="summary-label">Total Expenses</span>
+                                <span class="summary-value expense-text" id="summaryExpense">$0.00</span>
+                            </div>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Net Balance</span>
-                            <span class="summary-value" id="summaryNet">$0.00</span>
+                        <div class="summary-item net-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="summary-content">
+                                <span class="summary-label">Net Balance</span>
+                                <span class="summary-value" id="summaryNet">$0.00</span>
+                            </div>
                         </div>
-                        <div class="summary-item">
-                            <span class="summary-label">Top Category</span>
-                            <span class="summary-value" id="topCategory">-</span>
+                        <div class="summary-item category-item">
+                            <div class="summary-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="summary-content">
+                                <span class="summary-label">Top Category</span>
+                                <span class="summary-value" id="topCategory">-</span>
+                            </div>
                         </div>
                     </div>
                 </div>
