@@ -1143,9 +1143,6 @@ class FinanceTracker {
                 document.getElementById('accountType').value = account.type;
                 document.getElementById('accountBalance').value = account.balance;
                 document.getElementById('accountDailyLimit').value = this.dailyLimitUser;
-                document.getElementById('accountGoalName').value = '';
-                document.getElementById('accountGoalTarget').value = '';
-                document.getElementById('accountGoalDeadline').value = '';
                 form.dataset.accountId = accountId;
             }
         } else {
@@ -1186,26 +1183,6 @@ class FinanceTracker {
         } else {
             this.accounts.push(account);
             this.showToast('Success', 'Account created successfully! 🏦', 'success');
-        }
-
-        // Handle goal creation if provided (only on new account creation)
-        if (!accountId) {
-            const goalName = document.getElementById('accountGoalName').value.trim();
-            const goalTarget = parseFloat(document.getElementById('accountGoalTarget').value) || 0;
-            const goalDeadline = document.getElementById('accountGoalDeadline').value;
-
-            if (goalName && goalTarget > 0 && goalDeadline) {
-                const goal = {
-                    id: 'goal_' + Date.now(),
-                    name: goalName,
-                    target: goalTarget,
-                    current: 0,
-                    deadline: goalDeadline,
-                    createdAt: new Date().toISOString()
-                };
-                this.goals.push(goal);
-                this.showToast('Goal Created', `Savings goal "${goalName}" created successfully! 🎯`, 'success');
-            }
         }
 
         this.saveToStorage();
