@@ -2099,7 +2099,11 @@ body {
     background: linear-gradient(135deg, var(--warning-color), var(--expense-color));
 }
 
-.featured-list {\n    display: flex;\n    flex-direction: column;\n    gap: 12px;\n}
+.featured-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
 .home-card {
     background-color: var(--bg-primary);
