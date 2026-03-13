@@ -164,6 +164,15 @@ class FinanceTracker {
             this.openUpcomingModal();
         });
 
+        // Home page goals and upcoming buttons
+        document.getElementById('addGoalBtnHome')?.addEventListener('click', () => {
+            this.openGoalModal();
+        });
+
+        document.getElementById('addUpcomingBtnHome')?.addEventListener('click', () => {
+            this.openUpcomingModal();
+        });
+
         // Accounts and Cards
         document.getElementById('addAccountBtn').addEventListener('click', () => {
             this.openAccountModal();
@@ -1026,6 +1035,12 @@ class FinanceTracker {
         const goalsList = document.getElementById('goalsListHome');
         if (!goalsList) return;
         
+        // Update badge count
+        const badge = document.querySelector('.goals-featured .featured-badge');
+        if (badge) {
+            badge.textContent = this.goals.length;
+        }
+        
         goalsList.innerHTML = '';
 
         if (this.goals.length === 0) {
@@ -1071,25 +1086,35 @@ class FinanceTracker {
         const upcomingList = document.getElementById('upcomingListHome');
         if (!upcomingList) return;
         
-        upcomingList.innerHTML = '';
-        
         // Get upcoming expenses (today and onwards)
         const today = new Date();
         const upcoming = this.upcomingExpenses.filter(e => new Date(e.dueDate) >= today);
         upcoming.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+        
+        // Update badge count
+        const badge = document.querySelector('.expenses-featured .featured-badge');
+        if (badge) {
+            badge.textContent = upcoming.length;
+        }
+        
+        upcomingList.innerHTML = '';
 
         if (upcoming.length === 0) {
             upcomingList.innerHTML = '<p class="text-muted">No upcoming expenses</p>';
         } else {
             upcoming.forEach(expense => {
                 const daysUntil = Math.ceil((new Date(expense.dueDate) - today) / (1000 * 60 * 60 * 24));
+                const isUrgent = daysUntil <= 3; // Mark as urgent if due in 3 days or less
                 const item = document.createElement('div');
                 item.className = 'upcoming-item-home';
+                if (isUrgent) {
+                    item.style.borderLeftColor = 'var(--expense-color)';
+                }
                 item.innerHTML = `
                     <div class="upcoming-info">
                         <div class="upcoming-name">${expense.name}</div>
                         <div class="upcoming-date">Due: ${new Date(expense.dueDate).toLocaleDateString()}</div>
-                        <div class="upcoming-status">${daysUntil} days</div>
+                        <div class="upcoming-status ${isUrgent ? 'urgent' : ''}">${daysUntil} day${daysUntil !== 1 ? 's' : ''} left</div>
                     </div>
                     <div class="upcoming-actions">
                         <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
