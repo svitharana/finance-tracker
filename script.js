@@ -562,6 +562,10 @@ class FinanceTracker {
         // Update account selector in transaction form
         this.updateAccountSelectors();
 
+        // Update accounts and cards
+        this.renderAccounts();
+        this.renderCards();
+
         // Update goals
         this.renderGoals();
         this.renderHomeGoals();
