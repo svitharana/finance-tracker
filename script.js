@@ -1503,7 +1503,6 @@ class FinanceTracker {
             document.getElementById('transCard').value = transaction.cardId || '';
             document.getElementById('transDescription').value = transaction.description;
             
-            this.deleteTransaction(id);
             document.getElementById('transAmount').focus();
         }
     }
