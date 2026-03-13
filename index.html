@@ -183,23 +183,44 @@
         <!-- Transactions Page -->
         <section id="transactions" class="page">
             <div class="transactions-container">
+                <div class="transactions-header">
+                    <h1 class="transactions-title">Transaction History</h1>
+                    <p class="transactions-subtitle">Track all your income and expenses</p>
+                </div>
+
                 <div class="transactions-controls">
-                    <input type="text" id="searchTransactions" class="search-box" placeholder="Search transactions...">
-                    <select id="sortBy" class="select-control">
-                        <option value="date-desc">Newest First</option>
-                        <option value="date-asc">Oldest First</option>
-                        <option value="amount-desc">Highest Amount</option>
-                        <option value="amount-asc">Lowest Amount</option>
-                    </select>
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchTransactions" class="search-box" placeholder="Search transactions...">
+                    </div>
+                    <div class="sort-wrapper">
+                        <i class="fas fa-sort sort-icon"></i>
+                        <select id="sortBy" class="select-control">
+                            <option value="date-desc">Newest First</option>
+                            <option value="date-asc">Oldest First</option>
+                            <option value="amount-desc">Highest Amount</option>
+                            <option value="amount-asc">Lowest Amount</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="transactions-view">
-                    <div class="income-column">
-                        <h3>Income</h3>
+                    <div class="income-column transaction-column">
+                        <div class="column-header income-header">
+                            <div class="header-icon-group">
+                                <i class="fas fa-arrow-down header-icon income-icon"></i>
+                                <h3>Income</h3>
+                            </div>
+                        </div>
                         <div id="incomeList" class="transactions-list column-list"></div>
                     </div>
-                    <div class="expense-column">
-                        <h3>Expenses</h3>
+                    <div class="expense-column transaction-column">
+                        <div class="column-header expense-header">
+                            <div class="header-icon-group">
+                                <i class="fas fa-arrow-up header-icon expense-icon"></i>
+                                <h3>Expenses</h3>
+                            </div>
+                        </div>
                         <div id="expenseList" class="transactions-list column-list"></div>
                     </div>
                 </div>
