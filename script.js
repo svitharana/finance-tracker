@@ -1052,6 +1052,14 @@ class FinanceTracker {
                             </div>
                         </div>
                     </div>
+                    <div class="transaction-actions">
+                        <button class="btn-action edit" title="Edit" onclick="tracker.editGoal('${goal.id}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal('${goal.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 `;
                 goalsList.appendChild(item);
             });
@@ -1083,7 +1091,17 @@ class FinanceTracker {
                         <div class="upcoming-date">Due: ${new Date(expense.dueDate).toLocaleDateString()}</div>
                         <div class="upcoming-status">${daysUntil} days</div>
                     </div>
-                    <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
+                    <div class="upcoming-actions">
+                        <div class="transaction-amount">${this.formatCurrency(expense.amount)}</div>
+                        <div class="transaction-actions">
+                            <button class="btn-action edit" title="Edit" onclick="tracker.editUpcoming('${expense.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action delete" title="Delete" onclick="tracker.deleteUpcoming('${expense.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
                 `;
                 upcomingList.appendChild(item);
             });
