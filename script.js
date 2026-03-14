@@ -95,13 +95,15 @@ class FinanceTracker {
     }
 
     createDefaultAccount() {
+        const id = 'acc_' + Date.now();
         this.accounts.push({
-            id: 'acc_' + Date.now(),
+            id: id,
             name: 'Main Account',
             type: 'checking',
             balance: 0,
             createdAt: new Date().toISOString()
         });
+        this.settings.defaultAccount = id;
         this.saveToStorage();
     }
 
@@ -235,10 +237,17 @@ class FinanceTracker {
         document.getElementById('themeToggle').addEventListener('click', () => this.toggleDarkMode());
 
         // Settings
-        document.getElementById('settingsNavLink').addEventListener('click', (e) => { e.preventDefault(); this.openSettingsModal(); });
+        document.getElementById('settingsBtn').addEventListener('click', () => this.openSettingsModal());
         document.getElementById('settingsSaveBtn').addEventListener('click', () => this.saveSettings());
         document.getElementById('settingsThemeBtn').addEventListener('click', () => this.toggleDarkMode());
         document.getElementById('settingsResetBtn').addEventListener('click', () => { this.resetAllData(); document.getElementById('settingsModal').classList.remove('active'); });
+        document.getElementById('reminderMinus').addEventListener('click', () => this.stepReminderDays(-1));
+        document.getElementById('reminderPlus').addEventListener('click', () => this.stepReminderDays(1));
+
+        // Popover
+        document.getElementById('popoverCloseBtn').addEventListener('click', () => this.closePopover());
+        document.getElementById('popoverCancelBtn').addEventListener('click', () => this.closePopover());
+        document.getElementById('popoverConfirmBtn').addEventListener('click', () => this.confirmPopover());
 
         // Transactions
         document.getElementById('addTransactionBtn').addEventListener('click', () => this.openTransactionModal());
@@ -347,6 +356,8 @@ class FinanceTracker {
         icon.classList.toggle('fa-sun', this.darkMode);
         const themeLabel = document.getElementById('settingsThemeLabel');
         if (themeLabel) themeLabel.textContent = this.darkMode ? 'Dark Mode' : 'Light Mode';
+        const settingsThemeIcon = document.querySelector('#settingsThemeBtn i');
+        if (settingsThemeIcon) settingsThemeIcon.className = this.darkMode ? 'fas fa-sun' : 'fas fa-moon';
         if (Object.keys(this.charts).length > 0) {
             setTimeout(() => this.renderCharts(), 100);
         }
@@ -369,8 +380,10 @@ class FinanceTracker {
     openSettingsModal() {
         const modal = document.getElementById('settingsModal');
         document.getElementById('settingsCurrency').value = this.currency;
-        document.getElementById('settingsReminderDays').value = this.settings.reminderDays || 3;
+        document.getElementById('settingsReminderDays').textContent = this.settings.reminderDays || 3;
         document.getElementById('settingsThemeLabel').textContent = this.darkMode ? 'Dark Mode' : 'Light Mode';
+        const themeIcon = document.getElementById('settingsThemeBtn').querySelector('i');
+        themeIcon.className = this.darkMode ? 'fas fa-sun' : 'fas fa-moon';
         const accSelect = document.getElementById('settingsDefaultAccount');
         accSelect.innerHTML = '<option value="">None (always ask)</option>';
         this.accounts.forEach(acc => {
@@ -386,11 +399,18 @@ class FinanceTracker {
     saveSettings() {
         this.currency = document.getElementById('settingsCurrency').value;
         this.settings.defaultAccount = document.getElementById('settingsDefaultAccount').value;
-        this.settings.reminderDays = parseInt(document.getElementById('settingsReminderDays').value) || 3;
+        this.settings.reminderDays = parseInt(document.getElementById('settingsReminderDays').textContent) || 3;
         this.saveToStorage();
         this.updateUI();
         document.getElementById('settingsModal').classList.remove('active');
         this.showToast('Success', 'Settings saved!', 'success');
+    }
+
+    stepReminderDays(delta) {
+        const el = document.getElementById('settingsReminderDays');
+        let val = parseInt(el.textContent) || 3;
+        val = Math.max(1, Math.min(30, val + delta));
+        el.textContent = val;
     }
 
     // --- Transactions ---
@@ -1000,22 +1020,9 @@ class FinanceTracker {
     }
 
     addMoneyToGoal(goalId) {
-        const input = document.getElementById('goalMoney_' + goalId);
-        const amount = parseFloat(input ? input.value : 0);
-        if (!amount || amount <= 0) {
-            this.showToast('Error', 'Enter a valid amount', 'warning');
-            return;
-        }
         const goal = this.goals.find(g => g.id === goalId);
         if (!goal) return;
-        goal.current = Math.min(goal.current + amount, goal.target);
-        this.saveToStorage();
-        this.updateUI();
-        if (goal.current >= goal.target) {
-            this.showToast('🎉 Goal Reached!', goal.name + ' is fully funded!', 'success');
-        } else {
-            this.showToast('Success', this.formatCurrency(amount) + ' added to ' + goal.name, 'success');
-        }
+        this.openPopover('addMoney', goalId, 'Add Money to ' + goal.name, goal.target - goal.current);
     }
 
     renderHomeGoals() {
@@ -1033,7 +1040,7 @@ class FinanceTracker {
                 const isCompleted = goal.current >= goal.target;
                 const item = document.createElement('div');
                 item.className = 'goal-item-home' + (isCompleted ? ' goal-completed' : '');
-                item.innerHTML = '<div class="goal-info"><div class="goal-name">' + goal.name + (isCompleted ? ' <span class="goal-completed-badge">✅ Completed</span>' : '') + '</div><div class="goal-progress"><div class="goal-progress-bar' + (isCompleted ? ' completed' : '') + '" style="width: ' + Math.min(progress, 100) + '%"></div></div><div class="goal-stats"><div class="goal-stat"><span>' + this.formatCurrency(goal.current) + ' / ' + this.formatCurrency(goal.target) + '</span></div><div class="goal-stat"><span>' + (isCompleted ? 'Goal reached!' : daysLeft + ' days left') + '</span></div></div>' + (!isCompleted ? '<div class="goal-add-money"><input type="number" class="goal-money-input" id="goalMoney_' + goal.id + '" placeholder="Amount" step="0.01" min="0.01"><button class="btn btn-sm btn-primary" onclick="tracker.addMoneyToGoal(\'' + goal.id + '\')"><i class="fas fa-plus"></i> Add</button></div>' : '') + '</div><div class="transaction-actions"><button class="btn-action edit" title="Edit" onclick="tracker.editGoal(\'' + goal.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal(\'' + goal.id + '\')"><i class="fas fa-trash"></i></button></div>';
+                item.innerHTML = '<div class="goal-info"><div class="goal-name">' + goal.name + (isCompleted ? ' <span class="goal-completed-badge">✅ Completed</span>' : '') + '</div><div class="goal-progress"><div class="goal-progress-bar' + (isCompleted ? ' completed' : '') + '" style="width: ' + Math.min(progress, 100) + '%"></div></div><div class="goal-stats"><div class="goal-stat"><span>' + this.formatCurrency(goal.current) + ' / ' + this.formatCurrency(goal.target) + '</span></div><div class="goal-stat"><span>' + (isCompleted ? 'Goal reached!' : daysLeft + ' days left') + '</span></div></div></div><div class="transaction-actions">' + (!isCompleted ? '<button class="btn-pay" title="Add money" onclick="tracker.addMoneyToGoal(\'' + goal.id + '\')"><i class="fas fa-plus"></i> Add</button>' : '') + '<button class="btn-action edit" title="Edit" onclick="tracker.editGoal(\'' + goal.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal(\'' + goal.id + '\')"><i class="fas fa-trash"></i></button></div>';
                 goalsList.appendChild(item);
             });
         }
@@ -1117,47 +1124,7 @@ class FinanceTracker {
     payUpcomingExpense(expenseId) {
         const expense = this.upcomingExpenses.find(e => e.id === expenseId);
         if (!expense) return;
-
-        // Build account options for selection
-        const accountNames = this.accounts.map((a, i) => (i + 1) + '. ' + a.name + ' (' + this.formatCurrency(a.balance) + ')').join('\n');
-        const choice = prompt('Pay "' + expense.name + '" (' + this.formatCurrency(expense.amount) + ')\n\nSelect account:\n' + accountNames + '\n\nEnter number:');
-        if (!choice) return;
-
-        const idx = parseInt(choice) - 1;
-        if (isNaN(idx) || idx < 0 || idx >= this.accounts.length) {
-            this.showToast('Error', 'Invalid account selection', 'error');
-            return;
-        }
-
-        const account = this.accounts[idx];
-
-        // Create expense transaction
-        this.transactions.push({
-            id: 'trans_' + Date.now(),
-            date: new Date().toISOString().split('T')[0],
-            type: 'expense',
-            category: expense.category || 'other_expense',
-            amount: expense.amount,
-            accountId: account.id,
-            description: expense.name + (expense.recurring ? ' (recurring)' : ''),
-            receipt: null,
-            createdAt: new Date().toISOString()
-        });
-        account.balance -= expense.amount;
-
-        // Handle recurring vs one-time
-        if (expense.recurring) {
-            const nextDate = new Date(expense.dueDate);
-            nextDate.setMonth(nextDate.getMonth() + 1);
-            expense.dueDate = nextDate.toISOString().split('T')[0];
-            this.showToast('Paid!', expense.name + ' paid from ' + account.name + '. Next due: ' + new Date(expense.dueDate).toLocaleDateString(), 'success');
-        } else {
-            this.upcomingExpenses = this.upcomingExpenses.filter(e => e.id !== expenseId);
-            this.showToast('Paid!', expense.name + ' paid from ' + account.name, 'success');
-        }
-
-        this.saveToStorage();
-        this.updateUI();
+        this.openPopover('payExpense', expenseId, 'Pay ' + expense.name, expense.amount);
     }
 
     renderHomeUpcoming() {
@@ -1403,6 +1370,119 @@ class FinanceTracker {
     closeModalByElement(element) {
         var modal = element.closest('.modal');
         if (modal) modal.classList.remove('active');
+    }
+
+    // --- Popover System ---
+
+    openPopover(action, targetId, title, prefillAmount) {
+        this.popoverAction = action;
+        this.popoverTargetId = targetId;
+
+        const popover = document.getElementById('actionPopover');
+        document.getElementById('popoverTitle').textContent = title;
+        document.getElementById('popoverAmount').value = prefillAmount || '';
+
+        // Populate accounts
+        const accSelect = document.getElementById('popoverAccount');
+        accSelect.innerHTML = '';
+        this.accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.id;
+            opt.textContent = acc.name + ' (' + this.formatCurrency(acc.balance) + ')';
+            accSelect.appendChild(opt);
+        });
+        // Pre-select default account
+        if (this.settings.defaultAccount) {
+            accSelect.value = this.settings.defaultAccount;
+        }
+
+        // Position popover in center of viewport
+        popover.style.top = '50%';
+        popover.style.left = '50%';
+        popover.style.transform = 'translate(-50%, -50%)';
+        popover.classList.remove('hide');
+
+        // Add overlay to capture outside clicks
+        this._popoverOverlay = document.createElement('div');
+        this._popoverOverlay.className = 'popover-overlay';
+        this._popoverOverlay.addEventListener('click', () => this.closePopover());
+        document.body.appendChild(this._popoverOverlay);
+
+        // Focus amount
+        setTimeout(() => document.getElementById('popoverAmount').focus(), 100);
+    }
+
+    closePopover() {
+        document.getElementById('actionPopover').classList.add('hide');
+        if (this._popoverOverlay) {
+            this._popoverOverlay.remove();
+            this._popoverOverlay = null;
+        }
+        this.popoverAction = null;
+        this.popoverTargetId = null;
+    }
+
+    confirmPopover() {
+        const accountId = document.getElementById('popoverAccount').value;
+        const amount = parseFloat(document.getElementById('popoverAmount').value);
+
+        if (!accountId) {
+            this.showToast('Error', 'Please select an account', 'warning');
+            return;
+        }
+        if (!amount || amount <= 0) {
+            this.showToast('Error', 'Enter a valid amount', 'warning');
+            return;
+        }
+
+        const account = this.accounts.find(a => a.id === accountId);
+        if (!account) return;
+
+        if (this.popoverAction === 'payExpense') {
+            const expense = this.upcomingExpenses.find(e => e.id === this.popoverTargetId);
+            if (!expense) return;
+
+            this.transactions.push({
+                id: 'trans_' + Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                type: 'expense',
+                category: expense.category || 'other_expense',
+                amount: amount,
+                accountId: account.id,
+                description: expense.name + (expense.recurring ? ' (recurring)' : ''),
+                receipt: null,
+                createdAt: new Date().toISOString()
+            });
+            account.balance -= amount;
+
+            if (expense.recurring) {
+                const nextDate = new Date(expense.dueDate);
+                nextDate.setMonth(nextDate.getMonth() + 1);
+                expense.dueDate = nextDate.toISOString().split('T')[0];
+                this.showToast('Paid!', expense.name + ' paid from ' + account.name + '. Next due: ' + new Date(expense.dueDate).toLocaleDateString(), 'success');
+            } else {
+                this.upcomingExpenses = this.upcomingExpenses.filter(e => e.id !== this.popoverTargetId);
+                this.showToast('Paid!', expense.name + ' paid from ' + account.name, 'success');
+            }
+
+        } else if (this.popoverAction === 'addMoney') {
+            const goal = this.goals.find(g => g.id === this.popoverTargetId);
+            if (!goal) return;
+
+            const maxAdd = goal.target - goal.current;
+            const actualAmount = Math.min(amount, maxAdd);
+            goal.current += actualAmount;
+
+            if (goal.current >= goal.target) {
+                this.showToast('🎉 Goal Reached!', goal.name + ' is fully funded!', 'success');
+            } else {
+                this.showToast('Success', this.formatCurrency(actualAmount) + ' added to ' + goal.name, 'success');
+            }
+        }
+
+        this.saveToStorage();
+        this.updateUI();
+        this.closePopover();
     }
 }
 

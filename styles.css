@@ -401,6 +401,33 @@ body {
     align-items: center;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
 .header h1 {
     font-size: 24px;
     font-weight: 700;
@@ -1817,57 +1844,244 @@ body {
 }
 
 /* Settings Modal */
+.settings-modal {
+    max-width: 480px;
+}
+
 .settings-body {
     padding: 22px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
 }
 
-.settings-group {
+.settings-card {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    gap: 14px;
+    transition: var(--transition);
 }
 
-.settings-group > label {
+.settings-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.1);
+}
+
+.settings-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-card-icon {
+    font-size: 18px;
+    color: var(--primary-color);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background-color: rgba(99, 102, 241, 0.1);
+    flex-shrink: 0;
+}
+
+.settings-card-icon.danger-icon {
+    color: var(--expense-color);
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.settings-card-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.settings-card-desc {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.3;
+}
+
+.settings-select {
+    width: 160px;
+    flex-shrink: 0;
+}
+
+.settings-theme-toggle {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 16px;
+    transition: var(--transition);
+    flex-shrink: 0;
+}
+
+.settings-theme-toggle:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.settings-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.stepper-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stepper-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.stepper-value {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--text-primary);
+    min-width: 24px;
+    text-align: center;
+}
+
+.stepper-label {
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+.settings-danger-card {
+    border-color: rgba(239, 68, 68, 0.2);
+    background-color: rgba(239, 68, 68, 0.03);
+}
+
+.settings-danger-card:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: none;
+}
+
+/* Action Popover */
+.action-popover {
+    position: fixed;
+    z-index: 1100;
+    width: 280px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 0;
+    animation: popoverIn 0.2s ease;
+}
+
+@keyframes popoverIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.popover-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.popover-title {
     font-weight: 600;
     font-size: 14px;
     color: var(--text-primary);
 }
 
-.settings-hint {
-    font-size: 12px;
+.popover-close {
+    background: none;
+    border: none;
+    font-size: 18px;
     color: var(--text-tertiary);
-    font-style: italic;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
 }
 
-.settings-toggle-row {
+.popover-close:hover {
+    color: var(--text-primary);
+}
+
+.popover-body {
+    padding: 14px 16px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     gap: 12px;
 }
 
-.settings-inline {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.settings-inline input[type="number"] {
-    width: 70px;
-}
-
-.settings-inline span {
-    font-size: 14px;
+.popover-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
-.settings-danger {
-    border-top: 1px solid var(--border-color);
-    padding-top: 16px;
-    margin-top: 4px;
+.popover-select,
+.popover-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.popover-select:focus,
+.popover-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.popover-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 14px;
+}
+
+.popover-actions .btn {
+    flex: 1;
+}
+
+.popover-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1099;
+    background: transparent;
 }
 
 .form-actions {
