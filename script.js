@@ -428,6 +428,10 @@ class FinanceTracker {
             this.showToast('Missing Information', 'Please select an account', 'warning');
             return;
         }
+        if (!amount || amount <= 0) {
+            this.showToast('Invalid Amount', 'Please enter an amount greater than zero', 'warning');
+            return;
+        }
 
         // Warn if expense exceeds account balance
         if (type === 'expense') {
@@ -491,6 +495,7 @@ class FinanceTracker {
         document.getElementById('transactionForm').reset();
         this.setDefaultDate();
         this.editingTransactionId = null;
+        this._overdraftConfirmed = false;
         modal.querySelector('.modal-header h3').textContent = 'Add Transaction';
         document.getElementById('transSubmitBtn').textContent = 'Add Transaction';
         // Lock category until type is selected
@@ -503,6 +508,7 @@ class FinanceTracker {
     }
 
     closeTransactionModal() {
+        this._overdraftConfirmed = false;
         document.getElementById('transactionModal').classList.remove('active');
     }
 
@@ -595,6 +601,11 @@ class FinanceTracker {
         const fromAcc = this.accounts.find(a => a.id === fromId);
         const toAcc = this.accounts.find(a => a.id === toId);
         if (!fromAcc || !toAcc) return;
+
+        if (fromAcc.balance < amount) {
+            this.showToast('Insufficient Funds', fromAcc.name + ' only has ' + this.formatCurrency(fromAcc.balance) + '. Transfer cancelled.', 'warning');
+            return;
+        }
 
         fromAcc.balance -= amount;
         toAcc.balance += amount;
@@ -873,7 +884,11 @@ class FinanceTracker {
         const toast = document.createElement('div');
         toast.className = 'toast ' + type;
         const icons = { success: 'fas fa-check-circle', error: 'fas fa-times-circle', warning: 'fas fa-exclamation-circle', info: 'fas fa-info-circle' };
-        toast.innerHTML = '<div class="toast-icon"><i class="' + (icons[type] || icons.info) + '"></i></div><div class="toast-content"><div class="toast-title">' + title + '</div><div class="toast-message">' + message + '</div></div>';
+        const titleEl = document.createElement('div'); titleEl.className = 'toast-title'; titleEl.textContent = title;
+        const msgEl = document.createElement('div'); msgEl.className = 'toast-message'; msgEl.textContent = message;
+        const contentEl = document.createElement('div'); contentEl.className = 'toast-content'; contentEl.appendChild(titleEl); contentEl.appendChild(msgEl);
+        const iconEl = document.createElement('div'); iconEl.className = 'toast-icon'; iconEl.innerHTML = '<i class="' + (icons[type] || icons.info) + '"></i>';
+        toast.appendChild(iconEl); toast.appendChild(contentEl);
         container.appendChild(toast);
         setTimeout(function() {
             toast.classList.add('removing');
