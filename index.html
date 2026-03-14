@@ -9,6 +9,21 @@
     <link rel="stylesheet" href="libs/fontawesome/css/all.min.css">
 </head>
 <body>
+    <!-- Mobile Top Bar (visible only on mobile) -->
+    <div class="mobile-top-bar">
+        <button class="theme-toggle" id="themeToggleMobile" title="Toggle dark/light mode">
+            <i class="fas fa-moon"></i>
+        </button>
+        <div class="logo">
+            <i class="fas fa-wallet"></i>
+            <span>FinTrack</span>
+        </div>
+        <button class="mobile-hamburger" id="mobileHamburger">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -16,6 +31,9 @@
                 <i class="fas fa-wallet"></i>
                 <span>FinTrack</span>
             </div>
+            <button class="mobile-sidebar-close" id="mobileSidebarClose" title="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
             <button class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">
                 <i class="fas fa-moon"></i>
             </button>
@@ -66,6 +84,13 @@
             </div>
 
 
+        </div>
+        <div class="sidebar-bottom">
+            <div class="nav-settings-divider"></div>
+            <a href="#" class="nav-link nav-settings-link" id="navSettingsLink">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
         </div>
     </aside>
 

@@ -235,7 +235,23 @@ class FinanceTracker {
         document.getElementById('menuToggle').addEventListener('click', () => {
             document.querySelector('.nav-menu').classList.toggle('active');
         });
+
+        // Mobile sidebar panel
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const openSidebar = () => { sidebar.classList.add('open'); overlay.classList.add('active'); };
+        const closeSidebar = () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); };
+        document.getElementById('mobileHamburger').addEventListener('click', openSidebar);
+        document.getElementById('mobileSidebarClose').addEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+        document.getElementById('navSettingsLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSidebar();
+            this.openSettingsModal();
+        });
+
         document.getElementById('themeToggle').addEventListener('click', () => this.toggleDarkMode());
+        document.getElementById('themeToggleMobile').addEventListener('click', () => this.toggleDarkMode());
 
         // Settings
         document.getElementById('settingsBtn').addEventListener('click', () => this.openSettingsModal());
@@ -340,6 +356,8 @@ class FinanceTracker {
         const titles = { home: 'Home', transactions: 'All Transactions', accounts: 'Accounts', budgets: 'Budgets', summary: 'Summary & Analytics' };
         document.getElementById('pageTitle').textContent = titles[page] || page;
         document.querySelector('.nav-menu').classList.remove('active');
+        document.querySelector('.sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').classList.remove('active');
         if (page === 'transactions') this.renderTransactions();
         else if (page === 'accounts') this.renderAccounts();
         else if (page === 'budgets') this.renderBudgets();
@@ -355,6 +373,8 @@ class FinanceTracker {
         const icon = document.getElementById('themeToggle').querySelector('i');
         icon.classList.toggle('fa-moon', !this.darkMode);
         icon.classList.toggle('fa-sun', this.darkMode);
+        const mobileIcon = document.getElementById('themeToggleMobile')?.querySelector('i');
+        if (mobileIcon) { mobileIcon.classList.toggle('fa-moon', !this.darkMode); mobileIcon.classList.toggle('fa-sun', this.darkMode); }
         const themeLabel = document.getElementById('settingsThemeLabel');
         if (themeLabel) themeLabel.textContent = this.darkMode ? 'Dark Mode' : 'Light Mode';
         const settingsThemeIcon = document.querySelector('#settingsThemeBtn i');
@@ -369,6 +389,8 @@ class FinanceTracker {
             this.darkMode = true;
             document.body.classList.add('dark-mode');
             document.getElementById('themeToggle').querySelector('i').classList.replace('fa-moon', 'fa-sun');
+            const mi = document.getElementById('themeToggleMobile')?.querySelector('i');
+            if (mi) mi.classList.replace('fa-moon', 'fa-sun');
         }
     }
 
