@@ -844,7 +844,7 @@ class FinanceTracker {
         const symbol = symbols[this.currency] || '$';
         const abs = Math.abs(converted);
         const formatted = abs.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        return symbol + formatted;
+        return (converted < 0 ? '-' : '') + symbol + formatted;
     }
 
     showToast(title, message, type, duration) {
@@ -870,9 +870,16 @@ class FinanceTracker {
     // --- UI Updates ---
 
     updateUI() {
-        document.getElementById('totalBalance').textContent = this.formatCurrency(this.getTotalBalance());
-        document.getElementById('monthlyIncome').textContent = this.formatCurrency(this.getMonthlyIncome());
-        document.getElementById('monthlyExpense').textContent = this.formatCurrency(this.getMonthlyExpenses());
+        const balance = this.getTotalBalance();
+        const balanceEl = document.getElementById('totalBalance');
+        balanceEl.textContent = this.formatCurrency(balance);
+        balanceEl.style.color = balance < 0 ? 'var(--danger-color)' : 'var(--success-color)';
+        const incomeEl = document.getElementById('monthlyIncome');
+        incomeEl.textContent = this.formatCurrency(this.getMonthlyIncome());
+        incomeEl.style.color = 'var(--success-color)';
+        const expenseEl = document.getElementById('monthlyExpense');
+        expenseEl.textContent = this.formatCurrency(this.getMonthlyExpenses());
+        expenseEl.style.color = 'var(--danger-color)';
         this.updateAccountSelectors();
         this.renderAccounts();
         this.renderGoals();
@@ -1238,7 +1245,10 @@ class FinanceTracker {
 
         document.getElementById('summaryIncome').textContent = this.formatCurrency(income);
         document.getElementById('summaryExpense').textContent = this.formatCurrency(expense);
-        document.getElementById('summaryNet').textContent = this.formatCurrency(income - expense);
+        const net = income - expense;
+        const summaryNetEl = document.getElementById('summaryNet');
+        summaryNetEl.textContent = this.formatCurrency(net);
+        summaryNetEl.style.color = net < 0 ? 'var(--danger-color)' : 'var(--success-color)';
 
         const categoryTotals = {};
         monthlyTransactions.filter(t => !t.isTransfer).forEach(t => {
@@ -1382,6 +1392,10 @@ class FinanceTracker {
         document.getElementById('popoverTitle').textContent = title;
         document.getElementById('popoverAmount').value = prefillAmount || '';
 
+        // Lock amount field for pay expense
+        const amountInput = document.getElementById('popoverAmount');
+        amountInput.readOnly = (action === 'payExpense');
+
         // Populate accounts
         const accSelect = document.getElementById('popoverAccount');
         accSelect.innerHTML = '';
@@ -1437,6 +1451,11 @@ class FinanceTracker {
 
         const account = this.accounts.find(a => a.id === accountId);
         if (!account) return;
+
+        if (account.balance < amount) {
+            this.showToast('Insufficient Funds', account.name + ' only has ' + this.formatCurrency(account.balance) + '. Please choose another account.', 'warning');
+            return;
+        }
 
         if (this.popoverAction === 'payExpense') {
             const expense = this.upcomingExpenses.find(e => e.id === this.popoverTargetId);
