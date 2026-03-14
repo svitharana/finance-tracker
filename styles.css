@@ -652,6 +652,15 @@ body {
     background-color: var(--border-color);
 }
 
+.btn-danger {
+    background-color: var(--danger-color);
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+}
+
 .btn-sm {
     padding: 8px 12px;
     font-size: 12px;
@@ -2500,4 +2509,304 @@ body {
 
 .text-danger {
     color: var(--expense-color);
+}
+
+/* ========== Bill Reminder Banner ========== */
+.bill-reminder-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.08));
+    border: 1px solid var(--warning-color);
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.bill-reminder-banner.hide {
+    display: none !important;
+}
+
+.bill-reminder-banner i.fa-exclamation-triangle {
+    color: var(--warning-color);
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.bill-reminder-banner span {
+    flex: 1;
+}
+
+.bill-reminder-banner .btn-dismiss {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    transition: var(--transition);
+}
+
+.bill-reminder-banner .btn-dismiss:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* ========== Budgets Page ========== */
+.budgets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.budgets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.budgets-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+
+.budgets-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.budgets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.budget-card {
+    background-color: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xs);
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.budget-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+}
+
+.budget-card.over-budget::before {
+    background: linear-gradient(90deg, var(--expense-color), var(--warning-color));
+}
+
+.budget-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.budget-category {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.budget-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.budget-progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.budget-progress {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.budget-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--info-color));
+    border-radius: var(--radius-full);
+    transition: width 0.4s ease;
+}
+
+.budget-progress-bar.over {
+    background: linear-gradient(90deg, var(--expense-color), var(--warning-color));
+}
+
+.budget-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.budget-spent {
+    font-weight: 600;
+}
+
+.budget-remaining {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ========== Accounts Actions (Backup/Export) ========== */
+.accounts-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ========== Categories Modal ========== */
+.categories-section {
+    margin-bottom: 24px;
+}
+
+.categories-section h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.categories-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.category-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.category-tag.custom {
+    background-color: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.category-tag .btn-action {
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    font-size: 10px;
+    border-radius: 50%;
+}
+
+.category-tag small {
+    font-size: 10px;
+    opacity: 0.6;
+}
+
+.add-category-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.add-category-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.add-category-row input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.add-category-row button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.add-category-row button:hover {
+    background-color: var(--primary-hover);
+}
+
+/* ========== Trend Chart ========== */
+.trend-chart::before {
+    background: linear-gradient(90deg, var(--income-color), var(--expense-color));
+}
+
+/* ========== Transfer transaction style ========== */
+.transaction-item.transfer {
+    opacity: 0.75;
+    border-left-color: var(--text-tertiary);
+}
+
+/* ========== Responsive for new features ========== */
+@media (max-width: 768px) {
+    .budgets-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .budgets-actions,
+    .accounts-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .budgets-actions .btn,
+    .accounts-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .bill-reminder-banner {
+        flex-direction: column;
+        text-align: center;
+    }
 }

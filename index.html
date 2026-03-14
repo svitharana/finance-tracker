@@ -33,8 +33,12 @@
                 <span>Transactions</span>
             </a>
             <a href="#accounts" class="nav-link" data-page="accounts">
-                <i class="fas fa-credit-card"></i>
-                <span>Accounts & Cards</span>
+                <i class="fas fa-university"></i>
+                <span>Accounts</span>
+            </a>
+            <a href="#budgets" class="nav-link" data-page="budgets">
+                <i class="fas fa-bullseye"></i>
+                <span>Budgets</span>
             </a>
             <a href="#summary" class="nav-link" data-page="summary">
                 <i class="fas fa-chart-bar"></i>
@@ -132,10 +136,22 @@
                     </div>
                 </div>
 
+                <!-- Bill Reminders Banner -->
+                <div id="billReminderBanner" class="bill-reminder-banner hide">
+                    <div class="reminder-content">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="billReminderText">You have bills due soon!</span>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="tracker.dismissReminder()">Dismiss</button>
+                </div>
+
                 <!-- Add Transaction Button -->
                 <div class="add-transaction-button-container">
                     <button class="btn btn-primary btn-lg" id="addTransactionBtn">
                         <i class="fas fa-plus"></i> Add Transaction
+                    </button>
+                    <button class="btn btn-secondary btn-lg" id="transferBtn">
+                        <i class="fas fa-exchange-alt"></i> Transfer
                     </button>
                 </div>
 
@@ -230,19 +246,36 @@
             </div>
         </section>
 
-        <!-- Accounts & Cards Page -->
+        <!-- Accounts Page -->
         <section id="accounts" class="page">
             <div class="accounts-container">
                 <div class="accounts-header">
-                    <h1 class="accounts-title">Accounts & Cards Management</h1>
-                    <p class="accounts-subtitle">Manage your financial accounts and payment cards</p>
+                    <div>
+                        <h1 class="accounts-title">Accounts Management</h1>
+                        <p class="accounts-subtitle">Manage your financial accounts</p>
+                    </div>
+                    <div class="accounts-actions">
+                        <button class="btn btn-sm btn-secondary" id="backupBtn" title="Export backup">
+                            <i class="fas fa-download"></i> Backup
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="restoreBtn" title="Import backup">
+                            <i class="fas fa-upload"></i> Restore
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="exportCsvBtn" title="Export CSV">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button class="btn btn-sm btn-danger" id="resetAllBtn" title="Clear all data">
+                            <i class="fas fa-trash-alt"></i> Reset All
+                        </button>
+                        <input type="file" id="restoreFileInput" accept=".json" class="hide">
+                    </div>
                 </div>
 
                 <!-- Accounts Section -->
                 <div class="section-wrapper accounts-section">
                     <div class="section-header">
                         <div class="section-title-group">
-                            <i class="fas fa-credit-card section-icon"></i>
+                            <i class="fas fa-university section-icon"></i>
                             <div>
                                 <h2>My Accounts</h2>
                                 <p class="section-subtitle">Your bank accounts and wallets</p>
@@ -254,23 +287,27 @@
                     </div>
                     <div id="accountsList" class="accounts-grid"></div>
                 </div>
+            </div>
+        </section>
 
-                <!-- Cards Section -->
-                <div class="section-wrapper cards-section">
-                    <div class="section-header">
-                        <div class="section-title-group">
-                            <i class="fas fa-wallet section-icon"></i>
-                            <div>
-                                <h2>My Cards</h2>
-                                <p class="section-subtitle">Your credit and debit cards</p>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-primary" id="addCardBtn">
-                            <i class="fas fa-plus"></i> New Card
+        <!-- Budgets Page -->
+        <section id="budgets" class="page">
+            <div class="budgets-container">
+                <div class="budgets-header">
+                    <div>
+                        <h1 class="budgets-title">Monthly Budgets</h1>
+                        <p class="budgets-subtitle">Set spending limits by category</p>
+                    </div>
+                    <div class="budgets-actions">
+                        <button class="btn btn-sm btn-secondary" id="manageCategoriesBtn">
+                            <i class="fas fa-tags"></i> Manage Categories
+                        </button>
+                        <button class="btn btn-sm btn-primary" id="addBudgetBtn">
+                            <i class="fas fa-plus"></i> Add Budget
                         </button>
                     </div>
-                    <div id="cardsList" class="cards-grid"></div>
                 </div>
+                <div id="budgetsList" class="budgets-grid"></div>
             </div>
         </section>
 
@@ -315,6 +352,13 @@
                             <h3><i class="fas fa-piggy-bank"></i> Account Distribution</h3>
                         </div>
                         <canvas id="accountChart"></canvas>
+                    </div>
+
+                    <div class="chart-card card trend-chart">
+                        <div class="chart-header">
+                            <h3><i class="fas fa-chart-line"></i> 6-Month Trend</h3>
+                        </div>
+                        <canvas id="trendChart"></canvas>
                     </div>
                 </div>
 
@@ -421,19 +465,11 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="transAccount">Account</label>
-                        <select id="transAccount" required>
-                            <option value="">Select Account</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="transCard">Card (Optional)</label>
-                        <select id="transCard">
-                            <option value="">None</option>
-                        </select>
-                    </div>
+                <div class="form-group">
+                    <label for="transAccount">Account</label>
+                    <select id="transAccount" required>
+                        <option value="">Select Account</option>
+                    </select>
                 </div>
 
                 <div class="form-group full">
@@ -580,80 +616,97 @@
         </div>
     </div>
 
-    <!-- Add/Edit Card Modal -->
-    <div id="cardModal" class="modal">
+    <!-- Add/Edit Card Modal - REMOVED -->
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Payment Card</h3>
+                <h3>Transfer Between Accounts</h3>
                 <button class="modal-close">&times;</button>
             </div>
-            <form id="cardForm" class="modal-form">
+            <form id="transferForm" class="modal-form">
                 <div class="form-group">
-                    <label for="cardName">Card Name</label>
-                    <input type="text" id="cardName" placeholder="My Visa" required>
-                </div>
-                <div class="form-group">
-                    <label for="cardType">Card Type</label>
-                    <select id="cardType" required>
-                        <option value="visa">Visa</option>
-                        <option value="mastercard">Mastercard</option>
-                        <option value="amex">American Express</option>
-                        <option value="discover">Discover</option>
-                        <option value="other">Other</option>
+                    <label for="transferFrom">From Account</label>
+                    <select id="transferFrom" required>
+                        <option value="">Select Source</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="cardNumber">Last 4 Digits</label>
-                    <input type="text" id="cardNumber" placeholder="1234" maxlength="4" required>
+                    <label for="transferTo">To Account</label>
+                    <select id="transferTo" required>
+                        <option value="">Select Destination</option>
+                    </select>
                 </div>
                 <div class="form-group">
-                    <label for="cardLimit">Credit Limit</label>
-                    <input type="number" id="cardLimit" step="0.01" value="0" required>
+                    <label for="transferAmount">Amount</label>
+                    <input type="number" id="transferAmount" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="transferNote">Note (Optional)</label>
+                    <input type="text" id="transferNote" placeholder="e.g. Savings deposit">
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Save Card</button>
+                    <button type="submit" class="btn btn-primary">Transfer</button>
                     <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Exchange Rate Calculator Modal -->
-    <div id="exchangeModal" class="modal">
+    <!-- Budget Modal -->
+    <div id="budgetModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Currency Converter</h3>
+                <h3>Category Budget</h3>
                 <button class="modal-close">&times;</button>
             </div>
-            <div class="modal-body exchange-converter">
+            <form id="budgetForm" class="modal-form">
                 <div class="form-group">
-                    <label for="exchangeFrom">From</label>
-                    <select id="exchangeFrom">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="INR">INR</option>
-                        <option value="JPY">JPY</option>
+                    <label for="budgetCategory">Category</label>
+                    <select id="budgetCategory" required>
+                        <option value="">Select Category</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="exchangeAmount">Amount</label>
-                    <input type="number" id="exchangeAmount" step="0.01" placeholder="0.00">
+                    <label for="budgetAmount">Monthly Limit</label>
+                    <input type="number" id="budgetAmount" step="0.01" placeholder="0.00" required>
                 </div>
-                <div class="form-group">
-                    <label for="exchangeTo">To</label>
-                    <select id="exchangeTo">
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="INR">INR</option>
-                        <option value="JPY">JPY</option>
-                    </select>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Budget</button>
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancel</button>
                 </div>
-                <div class="exchange-result">
-                    <p id="exchangeResult">-</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Manage Categories Modal -->
+    <div id="categoriesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Categories</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="categories-section">
+                    <h4>Income Categories</h4>
+                    <div id="incomeCategoriesList" class="categories-list"></div>
+                    <div class="add-category-row">
+                        <input type="text" id="newIncomeCategory" placeholder="New income category">
+                        <button class="btn btn-sm btn-primary" onclick="tracker.addCustomCategory('income')"><i class="fas fa-plus"></i></button>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-secondary modal-close-btn btn-block">Close</button>
+                <div class="categories-section">
+                    <h4>Expense Categories</h4>
+                    <div id="expenseCategoriesList" class="categories-list"></div>
+                    <div class="add-category-row">
+                        <input type="text" id="newExpenseCategory" placeholder="New expense category">
+                        <button class="btn btn-sm btn-primary" onclick="tracker.addCustomCategory('expense')"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Close</button>
+                </div>
             </div>
         </div>
     </div>
