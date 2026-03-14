@@ -429,6 +429,19 @@ class FinanceTracker {
             return;
         }
 
+        // Warn if expense exceeds account balance
+        if (type === 'expense') {
+            const account = this.accounts.find(a => a.id === accountId);
+            if (account && amount > account.balance) {
+                if (!this._overdraftConfirmed) {
+                    this._overdraftConfirmed = true;
+                    this.showToast('Low Balance', account.name + ' only has ' + this.formatCurrency(account.balance) + '. Submit again to confirm.', 'warning', 5000);
+                    return;
+                }
+            }
+        }
+        this._overdraftConfirmed = false;
+
         if (this.editingTransactionId) {
             const existing = this.transactions.find(t => t.id === this.editingTransactionId);
             if (existing) {
@@ -480,6 +493,12 @@ class FinanceTracker {
         this.editingTransactionId = null;
         modal.querySelector('.modal-header h3').textContent = 'Add Transaction';
         document.getElementById('transSubmitBtn').textContent = 'Add Transaction';
+        // Lock category until type is selected
+        const transCategory = document.getElementById('transCategory');
+        if (transCategory) {
+            transCategory.disabled = true;
+            transCategory.innerHTML = '<option value="">Select type first</option>';
+        }
         modal.classList.add('active');
     }
 
