@@ -36,6 +36,7 @@ class FinanceTracker {
                 { id: 'rent', label: 'Rent/Mortgage' },
                 { id: 'education', label: 'Education' },
                 { id: 'subscription', label: 'Subscription' },
+                { id: 'savings', label: 'Savings/Goals' },
                 { id: 'other_expense', label: 'Other' }
             ]
         };
@@ -1491,11 +1492,24 @@ class FinanceTracker {
             const maxAdd = goal.target - goal.current;
             const actualAmount = Math.min(amount, maxAdd);
             goal.current += actualAmount;
+            account.balance -= actualAmount;
+
+            this.transactions.push({
+                id: 'trans_' + Date.now(),
+                date: new Date().toISOString().split('T')[0],
+                type: 'expense',
+                category: 'savings',
+                amount: actualAmount,
+                accountId: account.id,
+                description: 'Goal: ' + goal.name,
+                receipt: null,
+                createdAt: new Date().toISOString()
+            });
 
             if (goal.current >= goal.target) {
                 this.showToast('🎉 Goal Reached!', goal.name + ' is fully funded!', 'success');
             } else {
-                this.showToast('Success', this.formatCurrency(actualAmount) + ' added to ' + goal.name, 'success');
+                this.showToast('Success', this.formatCurrency(actualAmount) + ' added to ' + goal.name + ' from ' + account.name, 'success');
             }
         }
 
