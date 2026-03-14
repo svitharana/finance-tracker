@@ -13,6 +13,7 @@ class FinanceTracker {
         this.darkMode = false;
         this.editingTransactionId = null;
         this.reminderDismissed = false;
+        this.settings = { defaultAccount: '', reminderDays: 3 };
         this.exchangeRates = {
             LKR: 1, USD: 0.003, EUR: 0.0026, GBP: 0.0023, INR: 0.25,
             JPY: 0.45, AUD: 0.0045, CAD: 0.004, AED: 0.011, SAR: 0.012
@@ -72,12 +73,11 @@ class FinanceTracker {
             this.budgets = data.budgets || [];
             this.customCategories = data.customCategories || { income: [], expense: [] };
             this.currency = data.currency || 'LKR';
+            this.settings = data.settings || { defaultAccount: '', reminderDays: 3 };
         } else {
             this.createDefaultAccount();
             this.currency = 'LKR';
         }
-        const currencySelect = document.getElementById('currencySelect');
-        if (currencySelect) currencySelect.value = this.currency;
     }
 
     saveToStorage() {
@@ -88,7 +88,8 @@ class FinanceTracker {
             upcomingExpenses: this.upcomingExpenses,
             budgets: this.budgets,
             customCategories: this.customCategories,
-            currency: this.currency
+            currency: this.currency,
+            settings: this.settings
         };
         localStorage.setItem('financeTrackerData', JSON.stringify(data));
     }
@@ -121,27 +122,33 @@ class FinanceTracker {
 
     updateCategorySelectors() {
         const transCategory = document.getElementById('transCategory');
+        const transType = document.getElementById('transType');
         if (!transCategory) return;
         const currentVal = transCategory.value;
+        const selectedType = transType ? transType.value : '';
+
         transCategory.innerHTML = '<option value="">Select Category</option>';
 
-        const incomeGroup = document.createElement('optgroup');
-        incomeGroup.label = 'Income';
-        this.getAllCategories('income').forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat.id; opt.textContent = cat.label;
-            incomeGroup.appendChild(opt);
-        });
-        transCategory.appendChild(incomeGroup);
-
-        const expenseGroup = document.createElement('optgroup');
-        expenseGroup.label = 'Expenses';
-        this.getAllCategories('expense').forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat.id; opt.textContent = cat.label;
-            expenseGroup.appendChild(opt);
-        });
-        transCategory.appendChild(expenseGroup);
+        if (!selectedType) {
+            // No type selected — show disabled placeholder
+            transCategory.disabled = true;
+            transCategory.innerHTML = '<option value="">Select type first</option>';
+        } else {
+            transCategory.disabled = false;
+            if (selectedType === 'income') {
+                this.getAllCategories('income').forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id; opt.textContent = cat.label;
+                    transCategory.appendChild(opt);
+                });
+            } else {
+                this.getAllCategories('expense').forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id; opt.textContent = cat.label;
+                    transCategory.appendChild(opt);
+                });
+            }
+        }
         if (currentVal) transCategory.value = currentVal;
 
         const budgetCategory = document.getElementById('budgetCategory');
@@ -226,15 +233,17 @@ class FinanceTracker {
             document.querySelector('.nav-menu').classList.toggle('active');
         });
         document.getElementById('themeToggle').addEventListener('click', () => this.toggleDarkMode());
-        document.getElementById('currencySelect').addEventListener('change', (e) => {
-            this.currency = e.target.value;
-            this.saveToStorage();
-            this.updateUI();
-        });
+
+        // Settings
+        document.getElementById('settingsNavLink').addEventListener('click', (e) => { e.preventDefault(); this.openSettingsModal(); });
+        document.getElementById('settingsSaveBtn').addEventListener('click', () => this.saveSettings());
+        document.getElementById('settingsThemeBtn').addEventListener('click', () => this.toggleDarkMode());
+        document.getElementById('settingsResetBtn').addEventListener('click', () => { this.resetAllData(); document.getElementById('settingsModal').classList.remove('active'); });
 
         // Transactions
         document.getElementById('addTransactionBtn').addEventListener('click', () => this.openTransactionModal());
         document.getElementById('transactionForm').addEventListener('submit', (e) => { e.preventDefault(); this.addTransaction(); });
+        document.getElementById('transType').addEventListener('change', () => this.updateCategorySelectors());
         document.getElementById('searchTransactions').addEventListener('input', () => this.renderTransactions());
         document.getElementById('sortBy').addEventListener('change', () => this.renderTransactions());
 
@@ -281,6 +290,31 @@ class FinanceTracker {
 
         // Summary
         document.getElementById('summaryMonth').addEventListener('change', () => this.renderCharts());
+
+        // File upload drag & drop
+        const dropZone = document.getElementById('receiptDropZone');
+        const fileInput = document.getElementById('transReceipt');
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    this.showReceiptPreview(e.dataTransfer.files[0]);
+                }
+            });
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files[0]) this.showReceiptPreview(fileInput.files[0]);
+            });
+            document.getElementById('receiptRemoveBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.value = '';
+                document.getElementById('receiptPreview').classList.add('hide');
+                document.getElementById('receiptUploadContent').classList.remove('hide');
+            });
+        }
     }
 
     // --- Navigation ---
@@ -311,6 +345,8 @@ class FinanceTracker {
         const icon = document.getElementById('themeToggle').querySelector('i');
         icon.classList.toggle('fa-moon', !this.darkMode);
         icon.classList.toggle('fa-sun', this.darkMode);
+        const themeLabel = document.getElementById('settingsThemeLabel');
+        if (themeLabel) themeLabel.textContent = this.darkMode ? 'Dark Mode' : 'Light Mode';
         if (Object.keys(this.charts).length > 0) {
             setTimeout(() => this.renderCharts(), 100);
         }
@@ -326,6 +362,35 @@ class FinanceTracker {
 
     setDefaultDate() {
         document.getElementById('transDate').value = new Date().toISOString().split('T')[0];
+    }
+
+    // --- Settings ---
+
+    openSettingsModal() {
+        const modal = document.getElementById('settingsModal');
+        document.getElementById('settingsCurrency').value = this.currency;
+        document.getElementById('settingsReminderDays').value = this.settings.reminderDays || 3;
+        document.getElementById('settingsThemeLabel').textContent = this.darkMode ? 'Dark Mode' : 'Light Mode';
+        const accSelect = document.getElementById('settingsDefaultAccount');
+        accSelect.innerHTML = '<option value="">None (always ask)</option>';
+        this.accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc.id;
+            opt.textContent = acc.name;
+            accSelect.appendChild(opt);
+        });
+        accSelect.value = this.settings.defaultAccount || '';
+        modal.classList.add('active');
+    }
+
+    saveSettings() {
+        this.currency = document.getElementById('settingsCurrency').value;
+        this.settings.defaultAccount = document.getElementById('settingsDefaultAccount').value;
+        this.settings.reminderDays = parseInt(document.getElementById('settingsReminderDays').value) || 3;
+        this.saveToStorage();
+        this.updateUI();
+        document.getElementById('settingsModal').classList.remove('active');
+        this.showToast('Success', 'Settings saved!', 'success');
     }
 
     // --- Transactions ---
@@ -409,6 +474,28 @@ class FinanceTracker {
     resetTransactionForm() {
         document.getElementById('transactionForm').reset();
         this.setDefaultDate();
+        // Reset file upload preview
+        const preview = document.getElementById('receiptPreview');
+        const content = document.getElementById('receiptUploadContent');
+        if (preview) preview.classList.add('hide');
+        if (content) content.classList.remove('hide');
+        // Reset category to disabled
+        const transCategory = document.getElementById('transCategory');
+        if (transCategory) {
+            transCategory.disabled = true;
+            transCategory.innerHTML = '<option value="">Select type first</option>';
+        }
+    }
+
+    showReceiptPreview(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('receiptPreviewImg').src = e.target.result;
+            document.getElementById('receiptPreview').classList.remove('hide');
+            document.getElementById('receiptUploadContent').classList.add('hide');
+        };
+        reader.readAsDataURL(file);
     }
 
     openEditTransaction(id) {
@@ -417,6 +504,7 @@ class FinanceTracker {
         const modal = document.getElementById('transactionModal');
         document.getElementById('transDate').value = t.date;
         document.getElementById('transType').value = t.type;
+        this.updateCategorySelectors();
         document.getElementById('transCategory').value = t.category;
         document.getElementById('transAmount').value = t.amount;
         document.getElementById('transAccount').value = t.accountId;
@@ -609,12 +697,13 @@ class FinanceTracker {
     checkBillReminders() {
         if (this.reminderDismissed) return;
         const today = new Date();
-        const threeDaysOut = new Date(today);
-        threeDaysOut.setDate(threeDaysOut.getDate() + 3);
+        const daysOut = new Date(today);
+        const reminderDays = this.settings.reminderDays || 3;
+        daysOut.setDate(daysOut.getDate() + reminderDays);
 
         const urgentBills = this.upcomingExpenses.filter(e => {
             const due = new Date(e.dueDate);
-            return due >= today && due <= threeDaysOut;
+            return due >= today && due <= daysOut;
         });
 
         const banner = document.getElementById('billReminderBanner');
@@ -622,7 +711,7 @@ class FinanceTracker {
         if (!banner || !text) return;
         if (urgentBills.length > 0) {
             const total = urgentBills.reduce((s, b) => s + b.amount, 0);
-            text.textContent = urgentBills.length + ' bill' + (urgentBills.length > 1 ? 's' : '') + ' due within 3 days (' + this.formatCurrency(total) + ' total)';
+            text.textContent = urgentBills.length + ' bill' + (urgentBills.length > 1 ? 's' : '') + ' due within ' + reminderDays + ' days (' + this.formatCurrency(total) + ' total)';
             banner.classList.remove('hide');
         } else {
             banner.classList.add('hide');
@@ -761,8 +850,6 @@ class FinanceTracker {
     // --- UI Updates ---
 
     updateUI() {
-        var cs = document.getElementById('currencySelect');
-        if (cs) cs.value = this.currency;
         document.getElementById('totalBalance').textContent = this.formatCurrency(this.getTotalBalance());
         document.getElementById('monthlyIncome').textContent = this.formatCurrency(this.getMonthlyIncome());
         document.getElementById('monthlyExpense').textContent = this.formatCurrency(this.getMonthlyExpenses());
@@ -786,6 +873,9 @@ class FinanceTracker {
             option.textContent = account.name + ' (' + this.formatCurrency(account.balance) + ')';
             accountSelect.appendChild(option);
         }.bind(this));
+        if (this.settings.defaultAccount) {
+            accountSelect.value = this.settings.defaultAccount;
+        }
     }
 
     // --- Render Transactions ---
@@ -909,6 +999,25 @@ class FinanceTracker {
         this.saveToStorage(); this.updateUI();
     }
 
+    addMoneyToGoal(goalId) {
+        const input = document.getElementById('goalMoney_' + goalId);
+        const amount = parseFloat(input ? input.value : 0);
+        if (!amount || amount <= 0) {
+            this.showToast('Error', 'Enter a valid amount', 'warning');
+            return;
+        }
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal) return;
+        goal.current = Math.min(goal.current + amount, goal.target);
+        this.saveToStorage();
+        this.updateUI();
+        if (goal.current >= goal.target) {
+            this.showToast('🎉 Goal Reached!', goal.name + ' is fully funded!', 'success');
+        } else {
+            this.showToast('Success', this.formatCurrency(amount) + ' added to ' + goal.name, 'success');
+        }
+    }
+
     renderHomeGoals() {
         const goalsList = document.getElementById('goalsListHome');
         if (!goalsList) return;
@@ -921,9 +1030,10 @@ class FinanceTracker {
             this.goals.forEach(goal => {
                 const progress = (goal.current / goal.target) * 100;
                 const daysLeft = Math.ceil((new Date(goal.deadline) - new Date()) / (1000 * 60 * 60 * 24));
+                const isCompleted = goal.current >= goal.target;
                 const item = document.createElement('div');
-                item.className = 'goal-item-home';
-                item.innerHTML = '<div class="goal-info"><div class="goal-name">' + goal.name + '</div><div class="goal-progress"><div class="goal-progress-bar" style="width: ' + Math.min(progress, 100) + '%"></div></div><div class="goal-stats"><div class="goal-stat"><span>' + this.formatCurrency(goal.current) + ' / ' + this.formatCurrency(goal.target) + '</span></div><div class="goal-stat"><span>' + daysLeft + ' days left</span></div></div></div><div class="transaction-actions"><button class="btn-action edit" title="Edit" onclick="tracker.editGoal(\'' + goal.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal(\'' + goal.id + '\')"><i class="fas fa-trash"></i></button></div>';
+                item.className = 'goal-item-home' + (isCompleted ? ' goal-completed' : '');
+                item.innerHTML = '<div class="goal-info"><div class="goal-name">' + goal.name + (isCompleted ? ' <span class="goal-completed-badge">✅ Completed</span>' : '') + '</div><div class="goal-progress"><div class="goal-progress-bar' + (isCompleted ? ' completed' : '') + '" style="width: ' + Math.min(progress, 100) + '%"></div></div><div class="goal-stats"><div class="goal-stat"><span>' + this.formatCurrency(goal.current) + ' / ' + this.formatCurrency(goal.target) + '</span></div><div class="goal-stat"><span>' + (isCompleted ? 'Goal reached!' : daysLeft + ' days left') + '</span></div></div>' + (!isCompleted ? '<div class="goal-add-money"><input type="number" class="goal-money-input" id="goalMoney_' + goal.id + '" placeholder="Amount" step="0.01" min="0.01"><button class="btn btn-sm btn-primary" onclick="tracker.addMoneyToGoal(\'' + goal.id + '\')"><i class="fas fa-plus"></i> Add</button></div>' : '') + '</div><div class="transaction-actions"><button class="btn-action edit" title="Edit" onclick="tracker.editGoal(\'' + goal.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteGoal(\'' + goal.id + '\')"><i class="fas fa-trash"></i></button></div>';
                 goalsList.appendChild(item);
             });
         }
@@ -1004,6 +1114,52 @@ class FinanceTracker {
         this.saveToStorage(); this.updateUI();
     }
 
+    payUpcomingExpense(expenseId) {
+        const expense = this.upcomingExpenses.find(e => e.id === expenseId);
+        if (!expense) return;
+
+        // Build account options for selection
+        const accountNames = this.accounts.map((a, i) => (i + 1) + '. ' + a.name + ' (' + this.formatCurrency(a.balance) + ')').join('\n');
+        const choice = prompt('Pay "' + expense.name + '" (' + this.formatCurrency(expense.amount) + ')\n\nSelect account:\n' + accountNames + '\n\nEnter number:');
+        if (!choice) return;
+
+        const idx = parseInt(choice) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= this.accounts.length) {
+            this.showToast('Error', 'Invalid account selection', 'error');
+            return;
+        }
+
+        const account = this.accounts[idx];
+
+        // Create expense transaction
+        this.transactions.push({
+            id: 'trans_' + Date.now(),
+            date: new Date().toISOString().split('T')[0],
+            type: 'expense',
+            category: expense.category || 'other_expense',
+            amount: expense.amount,
+            accountId: account.id,
+            description: expense.name + (expense.recurring ? ' (recurring)' : ''),
+            receipt: null,
+            createdAt: new Date().toISOString()
+        });
+        account.balance -= expense.amount;
+
+        // Handle recurring vs one-time
+        if (expense.recurring) {
+            const nextDate = new Date(expense.dueDate);
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            expense.dueDate = nextDate.toISOString().split('T')[0];
+            this.showToast('Paid!', expense.name + ' paid from ' + account.name + '. Next due: ' + new Date(expense.dueDate).toLocaleDateString(), 'success');
+        } else {
+            this.upcomingExpenses = this.upcomingExpenses.filter(e => e.id !== expenseId);
+            this.showToast('Paid!', expense.name + ' paid from ' + account.name, 'success');
+        }
+
+        this.saveToStorage();
+        this.updateUI();
+    }
+
     renderHomeUpcoming() {
         const upcomingList = document.getElementById('upcomingListHome');
         if (!upcomingList) return;
@@ -1022,7 +1178,7 @@ class FinanceTracker {
                 const item = document.createElement('div');
                 item.className = 'upcoming-item-home';
                 if (isUrgent) item.style.borderLeftColor = 'var(--expense-color)';
-                item.innerHTML = '<div class="upcoming-info"><div class="upcoming-name">' + expense.name + '</div><div class="upcoming-date">Due: ' + new Date(expense.dueDate).toLocaleDateString() + (expense.recurring ? ' \uD83D\uDD04' : '') + '</div><div class="upcoming-status' + (isUrgent ? ' urgent' : '') + '">' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : '') + ' left</div></div><div class="upcoming-actions"><div class="transaction-amount">' + this.formatCurrency(expense.amount) + '</div><div class="transaction-actions"><button class="btn-action edit" title="Edit" onclick="tracker.editUpcoming(\'' + expense.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteUpcoming(\'' + expense.id + '\')"><i class="fas fa-trash"></i></button></div></div>';
+                item.innerHTML = '<div class="upcoming-info"><div class="upcoming-name">' + expense.name + '</div><div class="upcoming-date">Due: ' + new Date(expense.dueDate).toLocaleDateString() + (expense.recurring ? ' \uD83D\uDD04' : '') + '</div><div class="upcoming-status' + (isUrgent ? ' urgent' : '') + '">' + daysUntil + ' day' + (daysUntil !== 1 ? 's' : '') + ' left</div></div><div class="upcoming-actions"><div class="transaction-amount">' + this.formatCurrency(expense.amount) + '</div><div class="transaction-actions"><button class="btn-pay" title="Pay now" onclick="tracker.payUpcomingExpense(\'' + expense.id + '\')"><i class="fas fa-check"></i> Pay</button><button class="btn-action edit" title="Edit" onclick="tracker.editUpcoming(\'' + expense.id + '\')"><i class="fas fa-edit"></i></button><button class="btn-action delete" title="Delete" onclick="tracker.deleteUpcoming(\'' + expense.id + '\')"><i class="fas fa-trash"></i></button></div></div>';
                 upcomingList.appendChild(item);
             });
         }
