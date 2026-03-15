@@ -58,7 +58,7 @@ A comprehensive personal finance tracking web application built with vanilla HTM
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<your-username>/finance-tracker.git
+   git clone https://github.com/<svitharana>/finance-tracker.git
    cd finance-tracker
    ```
 
@@ -108,10 +108,6 @@ All data is stored in the browser's **LocalStorage** under the key `financeTrack
 - **Single Class**: `FinanceTracker` — manages all state, events, rendering, and storage
 - **No Dependencies**: Pure vanilla JS with zero npm packages
 - **CDN Libraries**: Chart.js for charts, Font Awesome for icons, Google Fonts for typography
-
-## Screenshots
-
-> _Add screenshots of your app here (Home page, Transactions, Charts, Dark Mode, etc.)_
 
 ## License
 
